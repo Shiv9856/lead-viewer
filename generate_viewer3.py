@@ -3,11 +3,11 @@
 Generate the Lead Journey Viewer HTML from a Spinny call_history CSV.
 
 Usage:
-    python generate_viewer.py <input_csv> [output_html]
+    python generate_viewer_fixed.py <input_csv> [output_html]
 
 Examples:
-    python generate_viewer.py call_history.csv
-    python generate_viewer.py call_history.csv viewer.html
+    python generate_viewer_fixed.py call_history.csv
+    python generate_viewer_fixed.py call_history.csv viewer.html
 
 Requires: pandas  (install with: pip install pandas)
 """
@@ -28,9 +28,8 @@ except ImportError:
 # Calls are considered "connected" if the hangup reason is one of these
 CONNECTED_HANGUPS = {"CLIENT_INITIATED", "PARTICIPANT_REMOVED"}
 
-# Max transcript length before truncation — keeps the HTML reasonably sized.
-# Raise this if you want longer transcripts; lower it if the file gets too big.
-MAX_TRANSCRIPT_CHARS = 6000
+# Max transcript length before truncation
+MAX_TRANSCRIPT_CHARS = 10000
 
 
 # =============================================================================
@@ -47,11 +46,6 @@ def _clean(v):
 
 
 def _parse_summary(raw):
-    """
-    `summary` is a JSON-ish list like:
-        [{"disposition":"callback_requested","milestone":"car_pitched", ...}]
-    Return the first dict or None.
-    """
     if pd.isna(raw) or not str(raw).strip():
         return None
     for parser in (json.loads, ast.literal_eval):
@@ -69,7 +63,6 @@ _SSML_TAG = re.compile(r"<break[^>]*/?>")
 
 
 def _clean_transcript(text):
-    """Strip SSML tags, collapse whitespace, put Assistant/User on new lines."""
     if not text:
         return ""
     text = _SSML_TAG.sub("", text)
@@ -79,7 +72,6 @@ def _clean_transcript(text):
 
 
 def build_leads_data(df: pd.DataFrame) -> list:
-    """Group rows by buylead and separate pre-call context from post-call outcome."""
     leads: dict[str, dict] = {}
 
     for _, row in df.iterrows():
@@ -87,11 +79,8 @@ def build_leads_data(df: pd.DataFrame) -> list:
         if lid in ("None", "nan", ""):
             continue
 
-        # Pre-call context — about the lead, not the call
         pre = {
             "city":          _clean(row.get("city")) or _clean(row.get("updated_city")) or "",
-            # "phone":         str(_clean(row.get("contact_number")) or ""),
-            # "user_id":       _clean(row.get("user_id")),
             "intent":        _clean(row.get("preferences.customer_intent")) or "",
             "body_type":     _clean(row.get("preferences.customer_filter_data.body_type")) or "",
             "fuel":          _clean(row.get("preferences.customer_filter_data.fuel_type")) or "",
@@ -105,20 +94,7 @@ def build_leads_data(df: pd.DataFrame) -> list:
 
         if lid not in leads:
             leads[lid] = {"id": lid, "pre": pre, "interested_cars": [], "calls": []}
-            # car_1 / car_2 / car_3 — cars we pitched to agent for this lead
-            # for i in (1, 2, 3):
-            #     make = _clean(row.get(f"car_{i}.make"))
-            #     model = _clean(row.get(f"car_{i}.model"))
-            #     if make and model:
-            #         leads[lid]["interested_cars"].append({
-            #             "make":  make,
-            #             "model": model,
-            #             "price": _clean(row.get(f"car_{i}.price")),
-            #             "fuel":  _clean(row.get(f"car_{i}.fuel")),
-            #             "hub":   _clean(row.get(f"car_{i}.hub_name")) or "",
-            #         })
 
-        # Post-call outcome — about this specific call
         hangup = _clean(row.get("Hangup Reason")) or ""
         duration = _clean(row.get("Call Duration"))
         summary = _parse_summary(row.get("summary"))
@@ -141,7 +117,6 @@ def build_leads_data(df: pd.DataFrame) -> list:
         if summary:
             call.update({
                 "disposition":      summary.get("disposition", "") or "",
-                # "short_summary":    summary.get("short_summary", "") or "",
                 "pitched_cars":     summary.get("pitched_car_ids", "") or "",
                 "rejected_cars":    summary.get("rejected_car_ids", "") or "",
                 "rejected_reasons": summary.get("rejected_reasons", "") or "",
@@ -149,7 +124,6 @@ def build_leads_data(df: pd.DataFrame) -> list:
                 "budget":           summary.get("budget", "") or "",
             })
 
-        # Truncate long transcripts
         t = call["transcript"]
         if len(t) > MAX_TRANSCRIPT_CHARS:
             call["transcript"] = (
@@ -158,10 +132,8 @@ def build_leads_data(df: pd.DataFrame) -> list:
             )
 
         leads[lid]["calls"].append(call)
-        # Keep the most recent row's pre-call context at lead level
         leads[lid]["pre"] = pre
 
-    # Sort calls chronologically within each lead
     for lead in leads.values():
         lead["calls"].sort(key=lambda c: c.get("time") or c.get("date") or "")
 
@@ -169,10 +141,8 @@ def build_leads_data(df: pd.DataFrame) -> list:
 
 
 # =============================================================================
-# HTML TEMPLATE
+# HTML TEMPLATE (FIXED)
 # =============================================================================
-# The full viewer HTML with a __DATA__ placeholder that gets replaced with the
-# JSON payload. Kept inline so this script is a single file you can share.
 
 HTML_TEMPLATE = r"""<!DOCTYPE html>
 <html lang="en">
@@ -211,6 +181,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   .fchip.active-success { background: var(--success); color: #fff; border-color: var(--success); }
   .fchip.active-warning { background: var(--warning); color: #fff; border-color: var(--warning); }
   .date-filter { display: flex; align-items: center; gap: 6px; }
+  .sort-control { display: flex; align-items: center; gap: 6px; }
   .header-stats { display: flex; gap: 14px; margin-left: auto; }
   .hstat { text-align: right; }
   .hstat-val { font-family: 'IBM Plex Mono', monospace; font-weight: 500; font-size: 15px; }
@@ -296,12 +267,24 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 <div class="app">
   <header>
     <div class="brand">Lead Journey</div>
-    <div class="search-box"><input id="q" type="text" placeholder="Search by buylead, phone, city, car, hangup, summary…"></div>
+    <div class="search-box"><input id="q" type="text" placeholder="Search by buylead, city, car, hangup, disposition…"></div>
     <div class="filters" id="filters"></div>
     <div class="date-filter">
       <label for="dateFilter" style="font-size:12px;color:var(--text-muted);margin-right:4px;">Start date</label>
       <input type="date" id="dateFilter" style="padding:5px 10px;border:1px solid var(--border-strong);border-radius:4px;font-family:inherit;font-size:12px;color:var(--text);background:var(--bg);outline:none;cursor:pointer;" />
       <button id="dateReset" style="padding:5px 8px;border:1px solid var(--border-strong);border-radius:4px;background:transparent;color:var(--text-muted);cursor:pointer;font-size:11px;font-family:inherit;display:none;">Clear</button>
+    </div>
+    <div class="sort-control">
+      <label for="sortBy" style="font-size:12px;color:var(--text-muted);margin-right:4px;">Sort</label>
+      <select id="sortBy" style="padding:5px 10px;border:1px solid var(--border-strong);border-radius:4px;font-family:inherit;font-size:12px;color:var(--text);background:var(--bg);outline:none;cursor:pointer;">
+        <option value="first_call_asc">First call (oldest)</option>
+        <option value="first_call_desc">First call (newest)</option>
+        <option value="total_calls">Most calls attempted</option>
+        <option value="connected_calls">Most connected calls</option>
+        <option value="milestone">Highest milestone</option>
+        <option value="duration">Longest call (connected)</option>
+        <option value="total_duration">Most total talk time</option>
+      </select>
     </div>
     <div class="header-stats">
       <div class="hstat"><div class="hstat-val" id="sL">0</div><div class="hstat-label">Leads</div></div>
@@ -320,11 +303,12 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 
 <script>
 const DATA = __DATA__;
-const state = { filtered: DATA.map(l => l.id), active: null, filter: 'all', dateFilter: null };
+const state = { filtered: DATA.map(l => l.id), active: null, filter: 'all', dateFilter: null, sortBy: 'first_call_asc' };
 const $ = s => document.querySelector(s);
 const esc = s => s == null ? '' : String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 const fmtPrice = n => !n ? '' : '\u20B9' + (n >= 100000 ? (n/100000).toFixed(1) + 'L' : (n/1000).toFixed(0) + 'k');
-const fmtTime = t => { if (!t) return ''; const d = new Date(t); return isNaN(d) ? t : d.toLocaleString('en-IN',{day:'2-digit',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'}); };
+const parseDate = t => { if (!t) return null; const m = String(t).match(/^(\d{2})-(\d{2})-(\d{4})(?:\s+(\d{2}):(\d{2}))?/); if (m) return new Date(+m[3], +m[2]-1, +m[1], +(m[4]||0), +(m[5]||0)); const d = new Date(t); return isNaN(d) ? null : d; };
+const fmtTime = t => { if (!t) return ''; const d = parseDate(t); return d ? d.toLocaleString('en-IN',{day:'2-digit',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'}) : String(t); };
 const fmtDur = s => { if (s == null || isNaN(s)) return ''; const total = Math.round(Number(s)); if (total < 60) return total + 's'; const m = Math.floor(total / 60), sec = total % 60; return m + ':' + String(sec).padStart(2, '0'); };
 const tr = (s, n) => !s ? '' : (String(s).length > n ? String(s).slice(0,n) + '\u2026' : String(s));
 const HANGUP_LBL = { 'CLIENT_INITIATED':'Client hung up', 'PARTICIPANT_REMOVED':'Agent ended', 'USER_UNAVAILABLE':'Not reachable', 'USER_UNRESPONSIVE':'No response', 'USER_REJECTED':'Rejected', 'VOICEMAIL_DETECTED':'Voicemail', 'OUTSIDE_TRIGGER_WINDOW':'Outside window' };
@@ -335,7 +319,20 @@ const dispBadge = d => { const s = String(d || '').toLowerCase(); if (/book|sche
 const lastMilestone = l => { for (let i = l.calls.length - 1; i >= 0; i--) if (l.calls[i].milestone) return l.calls[i].milestone; return ''; };
 const connectedCount = l => l.calls.filter(c => c.connected).length;
 const everConnected = l => l.calls.some(c => c.connected);
-const firstCallDate = l => { const d = l.calls[0]?.date || l.calls[0]?.time || ''; return d.slice(0, 10); };
+const firstCallDate = l => { const t = l.calls[0]?.date || l.calls[0]?.time || ''; const d = parseDate(t); if (!d) return ''; return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); };
+const firstCallTime = l => { const t = l.calls[0]?.time || l.calls[0]?.date || ''; const d = parseDate(t); return d ? d.getTime() : 0; };
+const maxConnDuration = l => l.calls.filter(c => c.connected && c.duration).reduce((mx, c) => Math.max(mx, c.duration), 0);
+const totalConnDuration = l => l.calls.filter(c => c.connected && c.duration).reduce((s, c) => s + c.duration, 0);
+const MS_ORDER = { test_drive_scheduled: 5, car_pitched: 4, preference_collected: 3, minimal_engagement: 2, fresh_lead: 1 };
+const SORT_FNS = {
+  first_call_asc:  (a, b) => firstCallTime(a) - firstCallTime(b),
+  first_call_desc: (a, b) => firstCallTime(b) - firstCallTime(a),
+  total_calls:     (a, b) => b.calls.length - a.calls.length || firstCallTime(a) - firstCallTime(b),
+  connected_calls: (a, b) => connectedCount(b) - connectedCount(a) || b.calls.length - a.calls.length,
+  milestone:       (a, b) => (MS_ORDER[lastMilestone(b)] || 0) - (MS_ORDER[lastMilestone(a)] || 0) || b.calls.length - a.calls.length,
+  duration:        (a, b) => maxConnDuration(b) - maxConnDuration(a) || connectedCount(b) - connectedCount(a),
+  total_duration:  (a, b) => totalConnDuration(b) - totalConnDuration(a) || connectedCount(b) - connectedCount(a),
+};
 
 function renderFilters() {
   const filters = [
@@ -367,12 +364,12 @@ function applyFilter() {
     if (state.filter === 'pitched' && lastMilestone(l) !== 'car_pitched') return false;
     if (state.dateFilter && firstCallDate(l) !== state.dateFilter) return false;
     if (!q) return true;
-    const hay = [l.id, l.pre.city, l.pre.phone, l.pre.intent, l.pre.fuel, l.pre.body_type,
+    const hay = [l.id, l.pre.city, l.pre.intent, l.pre.fuel, l.pre.body_type,
       ...l.interested_cars.map(c => c.make+' '+c.model),
-      ...l.calls.map(c => (c.milestone||'')+' '+(c.disposition||'')+' '+(c.short_summary||'')+' '+(c.hangup||''))
+      ...l.calls.map(c => (c.milestone||'')+' '+(c.disposition||'')+' '+(c.hangup||''))
     ].join(' ').toLowerCase();
     return hay.includes(q);
-  }).map(l => l.id);
+  }).sort(SORT_FNS[state.sortBy] || SORT_FNS.first_call_asc).map(l => l.id);
   renderSide();
 }
 
@@ -421,8 +418,7 @@ function renderDetail(id) {
   const budget = (p.min_price || p.max_price) ? (fmtPrice(p.min_price) + ' \u2013 ' + fmtPrice(p.max_price)) : '';
 
   const preFields = [
-    { lbl: 'City', val: p.city }, { lbl: 'Phone', val: p.phone, mono: true },
-    { lbl: 'User ID', val: p.user_id, mono: true }, { lbl: 'Intent', val: (p.intent||'').replace('_',' ') },
+    { lbl: 'City', val: p.city }, { lbl: 'Intent', val: (p.intent||'').replace('_',' ') },
     { lbl: 'Budget', val: budget }, { lbl: 'Fuel pref', val: p.fuel },
     { lbl: 'Body type', val: p.body_type }, { lbl: 'Transmission', val: p.transmission },
     { lbl: 'Make pref', val: p.make_pref }, { lbl: 'CRM milestone', val: p.crm_milestone },
@@ -462,11 +458,10 @@ function renderDetail(id) {
         <span class="badge ${hangupCls}">${esc(hangupLbl)}</span>
         ${c.handoff ? '<span class="badge b-warning">Handoff</span>' : ''}
         ${c.mark_dnd ? '<span class="badge b-danger">DND</span>' : ''}
-        <span class="csum">${esc(tr(c.short_summary, 120))}</span>
+        <span class="csum">${esc(tr((c.disposition||'').replace(/_/g,' '), 120))}</span>
         <span class="caret">\u25B6</span>
       </div>
       <div class="cb">
-        ${c.short_summary ? `<div class="sub-section-label">Call summary</div><div class="summary-box">${esc(c.short_summary)}</div>` : ''}
         ${c.rejected_reasons ? `<div class="sub-section-label">Why rejected</div><div class="rejected-box"><b>Reason: </b>${esc(c.rejected_reasons)}</div>` : ''}
         ${postFields.length ? `<div class="sub-section-label">Post-call details</div><div class="cfields">${postFields.map(f => `<div><div class="fl">${esc(f.lbl)}</div><div class="fv ${f.mono?'mono':''}">${esc(f.val)}</div></div>`).join('')}</div>` : ''}
         ${c.recording ? `<div class="sub-section-label">Recording</div><div class="rec-player"><audio controls preload="none" src="${esc(c.recording)}"></audio></div><a class="rec-link" href="${esc(c.recording)}" target="_blank" rel="noopener">Open recording in new tab \u2197</a>` : ''}
@@ -483,7 +478,6 @@ function renderDetail(id) {
           <span>${l.calls.length} call${l.calls.length===1?'':'s'}</span>
           <span class="sep">\u00B7</span><span>${conn} connected</span>
           ${p.city ? `<span class="sep">\u00B7</span><span>${esc(p.city)}</span>` : ''}
-          ${p.phone ? `<span class="sep">\u00B7</span><span class="mono">${esc(p.phone)}</span>` : ''}
           ${last ? `<span class="sep">\u00B7</span><span class="badge ${MS_BDG[last]||'b-neutral'}">${esc(MS_LBL[last]||last)}</span>` : ''}
         </div>
       </div>
@@ -515,7 +509,10 @@ $('#dateReset').addEventListener('click', () => {
   $('#dateReset').style.display = 'none';
   applyFilter(); renderFilters();
 });
-// Pre-populate with available dates so the user sees the range
+$('#sortBy').addEventListener('change', e => {
+  state.sortBy = e.target.value;
+  applyFilter();
+});
 (function setDateBounds() {
   const dates = DATA.map(firstCallDate).filter(Boolean).sort();
   if (dates.length) { $('#dateFilter').min = dates[0]; $('#dateFilter').max = dates[dates.length - 1]; }
