@@ -6,18 +6,44 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>
+// Apply saved theme BEFORE render to avoid flash
+(function(){try{const t=localStorage.getItem('ljv_theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
+</script>
 <style>
-:root{--bg:#FAF8F5;--s:#FFF;--s2:#F3EFE8;--bd:#E8E4DC;--bds:#D4CEC1;--tx:#1A1814;--tm:#6B6458;--tf:#9E9688;--ac:#C4633F;--as:#F4E4D9;--ok:#4A7C59;--oks:#DCE8DE;--wn:#B8823D;--wns:#F2E4CC;--in:#3F6B9C;--ins:#DDE6F0;--dn:#9C3F3F;--dns:#F0DDDD;--or:#8B5E3C;--ors:#F0E6D6}
+/* Light (default) */
+:root{
+  --bg:#FAF8F5;--s:#FFF;--s2:#F3EFE8;--bd:#E8E4DC;--bds:#D4CEC1;
+  --tx:#1A1814;--tm:#6B6458;--tf:#9E9688;
+  --ac:#C4633F;--as:#F4E4D9;
+  --ok:#4A7C59;--oks:#DCE8DE;
+  --wn:#B8823D;--wns:#F2E4CC;
+  --in:#3F6B9C;--ins:#DDE6F0;
+  --dn:#9C3F3F;--dns:#F0DDDD;
+  --or:#8B5E3C;--ors:#F0E6D6;
+}
+/* Dark */
+:root[data-theme="dark"]{
+  --bg:#141210;--s:#1C1A17;--s2:#242120;--bd:#2E2B27;--bds:#3D3832;
+  --tx:#E8E4DC;--tm:#9E9688;--tf:#6B6458;
+  --ac:#E88660;--as:#3A2720;
+  --ok:#7AB285;--oks:#1F2E23;
+  --wn:#D4A36A;--wns:#2E2418;
+  --in:#6E9BC8;--ins:#1B2632;
+  --dn:#C87070;--dns:#2E1E1E;
+  --or:#B5835E;--ors:#2A2218;
+}
 *{box-sizing:border-box;margin:0;padding:0}html,body{height:100%}
-body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tx);font-size:14px;line-height:1.5;overflow:hidden}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tx);font-size:14px;line-height:1.5;overflow:hidden;transition:background .2s,color .2s}
 code,.mono{font-family:'IBM Plex Mono',monospace}
 .app{display:flex;flex-direction:column;height:100vh}
-header{padding:10px 20px;background:var(--s);border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:12px;flex-shrink:0;flex-wrap:wrap}
+header{padding:10px 20px;background:var(--s);border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:12px;flex-shrink:0;flex-wrap:wrap;transition:background .2s,border-color .2s}
 .brand{font-family:'Instrument Serif',serif;font-weight:400;font-style:italic;font-size:22px;white-space:nowrap}
 .sbox{flex:1;max-width:380px;min-width:180px;position:relative}
-.sbox input{width:100%;padding:8px 12px 8px 34px;border:1px solid var(--bds);background:var(--bg);border-radius:4px;font-family:inherit;font-size:13px;outline:none}
+.sbox input{width:100%;padding:8px 12px 8px 34px;border:1px solid var(--bds);background:var(--bg);color:var(--tx);border-radius:4px;font-family:inherit;font-size:13px;outline:none}
 .sbox input:focus{border-color:var(--ac)}
 .sbox::before{content:'';position:absolute;left:11px;top:50%;width:13px;height:13px;transform:translateY(-50%);background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B6458' stroke-width='2'><circle cx='11' cy='11' r='7'/><path d='m21 21-4.3-4.3'/></svg>");background-size:contain}
+:root[data-theme="dark"] .sbox::before{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239E9688' stroke-width='2'><circle cx='11' cy='11' r='7'/><path d='m21 21-4.3-4.3'/></svg>")}
 .filters{display:flex;gap:5px;flex-wrap:wrap}
 .fch{padding:4px 10px;border:1px solid var(--bds);background:transparent;color:var(--tm);border-radius:18px;cursor:pointer;font-family:inherit;font-size:11px;transition:all .1s;white-space:nowrap}
 .fch:hover{border-color:var(--tm);color:var(--tx)}.fch.on{background:var(--tx);color:var(--bg);border-color:var(--tx)}
@@ -25,13 +51,21 @@ header{padding:10px 20px;background:var(--s);border-bottom:1px solid var(--bd);d
 .fch.on-dn{background:var(--dn);color:#fff;border-color:var(--dn)}.fch.on-or{background:var(--or);color:#fff;border-color:var(--or)}
 .dfl{display:flex;align-items:center;gap:5px}
 .dfl label{font-size:11px;color:var(--tm)}
-.dfl input,.dfl select{padding:4px 8px;border:1px solid var(--bds);border-radius:4px;font-family:inherit;font-size:11px;background:var(--bg);outline:none}
+.dfl input,.dfl select{padding:4px 8px;border:1px solid var(--bds);border-radius:4px;font-family:inherit;font-size:11px;background:var(--bg);color:var(--tx);outline:none}
 .dfl button{padding:4px 7px;border:1px solid var(--bds);border-radius:4px;background:transparent;color:var(--tm);cursor:pointer;font-size:10px;display:none}
-.hst{display:flex;gap:12px;margin-left:auto}
-.hst>div{text-align:right}.hst-v{font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:14px}
+/* Theme toggle button */
+.tog{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:1px solid var(--bds);border-radius:50%;background:transparent;cursor:pointer;color:var(--tm);transition:all .15s;padding:0}
+.tog:hover{border-color:var(--ac);color:var(--ac);transform:rotate(12deg)}
+.tog svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tog .sun{display:none}
+.tog .moon{display:block}
+:root[data-theme="dark"] .tog .sun{display:block}
+:root[data-theme="dark"] .tog .moon{display:none}
+.hst{display:flex;gap:12px;margin-left:auto;align-items:center}
+.hst>div.stat{text-align:right}.hst-v{font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:14px}
 .hst-l{font-size:9px;color:var(--tm);text-transform:uppercase;letter-spacing:.08em}
 main{flex:1;display:flex;overflow:hidden}
-.sidebar{width:330px;min-width:330px;border-right:1px solid var(--bd);background:var(--s);overflow-y:auto}
+.sidebar{width:330px;min-width:330px;border-right:1px solid var(--bd);background:var(--s);overflow-y:auto;transition:background .2s,border-color .2s}
 .sh{padding:8px 18px;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--tf);border-bottom:1px solid var(--bd);position:sticky;top:0;background:var(--s);z-index:1}
 .li{padding:10px 18px;border-bottom:1px solid var(--bd);cursor:pointer;transition:background .08s;position:relative}
 .li:hover{background:var(--s2)}.li.act{background:var(--as)}
@@ -42,7 +76,7 @@ main{flex:1;display:flex;overflow:hidden}
 .ct{padding:1px 6px;background:var(--s2);border-radius:9px;font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--tm)}
 .ct.cn{background:var(--oks);color:var(--ok)}.ct.nc{color:var(--tf)}
 .lm{font-size:11px;color:var(--tm);display:flex;gap:5px;align-items:center;flex-wrap:wrap}
-.detail{flex:1;overflow-y:auto;background:var(--bg)}
+.detail{flex:1;overflow-y:auto;background:var(--bg);transition:background .2s}
 .de{height:100%;display:flex;align-items:center;justify-content:center;color:var(--tf);font-family:'Instrument Serif',serif;font-style:italic;font-size:20px}
 .di{padding:24px 36px;max-width:1020px}
 .dh{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bd)}
@@ -56,13 +90,12 @@ main{flex:1;display:flex;overflow:hidden}
 .fg{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px 18px}
 .fl{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--tf);margin-bottom:1px}
 .fv{font-size:12px;word-break:break-word}.fv.mono{font-family:'IBM Plex Mono',monospace;font-size:11px}
-/* Timeline */
 .sec-h{display:flex;align-items:baseline;justify-content:space-between;margin:18px 0 12px}
 .sec-t{font-family:'Instrument Serif',serif;font-style:italic;font-size:20px}
 .sec-s{font-size:11px;color:var(--tm)}
 .tl{position:relative;padding-left:22px}
 .tl::before{content:'';position:absolute;left:5px;top:8px;bottom:8px;width:1px;background:var(--bds)}
-.call{position:relative;background:var(--s);border:1px solid var(--bd);border-radius:4px;margin-bottom:8px}
+.call{position:relative;background:var(--s);border:1px solid var(--bd);border-radius:4px;margin-bottom:8px;transition:background .2s,border-color .2s}
 .call::before{content:'';position:absolute;left:-20px;top:16px;width:8px;height:8px;border-radius:50%;background:var(--s);border:2px solid var(--tf)}
 .call.conn::before{background:var(--ok);border-color:var(--ok)}
 .call.disc::before{background:var(--s);border-color:var(--bds)}
@@ -75,7 +108,6 @@ main{flex:1;display:flex;overflow:hidden}
 .call.open .caret{transform:rotate(90deg)}
 .cb{display:none;border-top:1px dashed var(--bd)}
 .call.open .cb{display:block}
-/* Inner tabs per call */
 .ctabs{display:flex;gap:0;border-bottom:1px solid var(--bd);background:var(--s2)}
 .ctab{padding:6px 12px;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--tm);cursor:pointer;border-bottom:2px solid transparent}
 .ctab:hover{color:var(--tx)}.ctab.on{color:var(--ac);border-bottom-color:var(--ac)}
@@ -85,8 +117,7 @@ main{flex:1;display:flex;overflow:hidden}
 .cf{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px 16px;margin-bottom:4px}
 .rbox{background:var(--dns);border-left:2px solid var(--dn);padding:8px 10px;border-radius:0 3px 3px 0;font-size:12px;line-height:1.5}
 .rbox b{color:var(--dn);font-weight:500}
-.txbox{background:var(--s2);border-radius:3px;padding:10px 12px;font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.8;white-space:pre-wrap;max-height:340px;overflow-y:auto;border-left:2px solid var(--ac)}
-/* Transcript status row */
+.txbox{background:var(--s2);border-radius:3px;padding:10px 12px;font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.8;white-space:pre-wrap;max-height:340px;overflow-y:auto;border-left:2px solid var(--ac);color:var(--tx)}
 .txstatus{display:flex;gap:16px;padding:8px 12px;background:var(--s2);border-radius:3px;margin-bottom:8px;border-left:2px solid var(--in)}
 .txstatus .item{display:flex;flex-direction:column;gap:2px}
 .txstatus .item .k{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--tf)}
@@ -95,6 +126,7 @@ main{flex:1;display:flex;overflow:hidden}
 .rec a{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--in);text-decoration:none;margin-top:3px}
 .rec a:hover{text-decoration:underline}
 .rec audio{width:100%;height:36px}
+:root[data-theme="dark"] .rec audio{filter:invert(0.9) hue-rotate(180deg)}
 .none{padding:30px;text-align:center;color:var(--tf);font-style:italic}
 .cmt{background:var(--s2);border-radius:3px;padding:8px 10px;font-size:12px;margin-bottom:4px;border-left:2px solid var(--wn)}
 .cmt .cu{font-size:10px;color:var(--tm);margin-bottom:2px}
@@ -120,9 +152,13 @@ main{flex:1;display:flex;overflow:hidden}
   </select>
  </div>
  <div class="hst">
-  <div><div class="hst-v" id="sL">0</div><div class="hst-l">Leads</div></div>
-  <div><div class="hst-v" id="sC">0</div><div class="hst-l">Calls</div></div>
-  <div><div class="hst-v" id="sCo">0</div><div class="hst-l">Connected</div></div>
+  <div class="stat"><div class="hst-v" id="sL">0</div><div class="hst-l">Leads</div></div>
+  <div class="stat"><div class="hst-v" id="sC">0</div><div class="hst-l">Calls</div></div>
+  <div class="stat"><div class="hst-v" id="sCo">0</div><div class="hst-l">Connected</div></div>
+  <button class="tog" id="themeTog" title="Toggle theme" aria-label="Toggle theme">
+   <svg class="moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+   <svg class="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+  </button>
  </div>
 </header>
 <main>
@@ -153,6 +189,17 @@ const fct=l=>{const t=l.calls[0]?.time||l.calls[0]?.date||'';const d=pd(t);retur
 const mcd=l=>l.calls.filter(c=>c.connected&&c.duration).reduce((m,c)=>Math.max(m,c.duration),0);
 const tcd=l=>l.calls.filter(c=>c.connected&&c.duration).reduce((s,c)=>s+c.duration,0);
 const SF={fca:(a,b)=>fct(a)-fct(b),fcd:(a,b)=>fct(b)-fct(a),tc:(a,b)=>b.calls.length-a.calls.length,cc:(a,b)=>cc(b)-cc(a),ms:(a,b)=>(MO[lm(b)]||0)-(MO[lm(a)]||0),dur:(a,b)=>mcd(b)-mcd(a),tdur:(a,b)=>tcd(b)-tcd(a)};
+
+// Theme toggle
+function setTheme(t){
+ if(t==='dark')document.documentElement.setAttribute('data-theme','dark');
+ else document.documentElement.removeAttribute('data-theme');
+ try{localStorage.setItem('ljv_theme',t);}catch(e){}
+}
+$('#themeTog').onclick=()=>{
+ const cur=document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';
+ setTheme(cur==='dark'?'light':'dark');
+};
 
 function renderFil(){
  const fs=[
@@ -237,14 +284,12 @@ function renderDet(id){
  if(!l){d.innerHTML='';return}
  const m=lm(l);const cn=cc(l);
 
- // Build call timeline
  const callsH=l.calls.map((c,i)=>{
   const cls=c.connected?'conn':'disc';
   const hl=HL[c.hangup]||c.hangup||'';
   const hb=HB[c.hangup]||'b-ne';
   const mt=c.meta||{};
 
-  // META panel (Before Call)
   let metaH='';
   metaH+=prefGrid(mt.agent_prefs,'Agent preferences (before call)');
   metaH+=prefGrid(mt.cust_prefs,'Customer preferences (before call)');
@@ -254,7 +299,6 @@ function renderDet(id){
     ${lc.milestone?`<div><div class="fl">Milestone</div><div class="fv">${esc(lc.milestone)}</div></div>`:''}
     ${lc.disposition?`<div><div class="fl">Disposition</div><div class="fv">${esc(lc.disposition)}</div></div>`:''}
     ${lc.budget?`<div><div class="fl">Budget</div><div class="fv mono">${fp(+lc.budget)}</div></div>`:''}
-    ${lc.pitched?`<div><div class="fl">Pitched</div><div class="fv mono">${esc(lc.pitched)}</div></div>`:''}
    </div>`;
   }
   if(mt.visits){
@@ -277,7 +321,6 @@ function renderDet(id){
   }
   if(!metaH)metaH='<div style="color:var(--tf);font-style:italic;padding:8px">No metadata available for this call</div>';
 
-  // POST panel (After Call) — reduced fields per user request
   const scn=(c.scenario||'').replace(/^S\d+_/,'').replace(/_/g,' ');
   const pf=[
    {l:'Milestone',v:ML[c.milestone]||c.milestone},
@@ -285,8 +328,6 @@ function renderDet(id){
    {l:'Budget',v:c.budget?fp(+c.budget):''},
    {l:'Scenario',v:scn},
    {l:'Capability',v:c.capability},
-   {l:'Liked cars',v:c.liked_cars,m:1},
-   {l:'TD cars',v:c.td_cars,m:1},
    {l:'Selected TD slot',v:c.selected_td_slot?ft(c.selected_td_slot):''},
    {l:'Updated city',v:c.updated_city},
    {l:'Rescheduled time',v:c.rescheduled_time?ft(c.rescheduled_time):''},
@@ -302,7 +343,6 @@ function renderDet(id){
    c.handoff&&'Handoff',c.lang_switch&&'Lang Switch',
   ].filter(Boolean);
 
-  // User prefs collected in this call
   const up={};
   if(c.user_fuel)up['Fuel']=c.user_fuel;if(c.user_trans)up['Trans']=c.user_trans;
   if(c.user_body)up['Body']=c.user_body;if(c.user_make)up['Make']=c.user_make;
@@ -322,7 +362,6 @@ function renderDet(id){
   if(c.review)postH+=`<div class="slbl">Review</div><div style="background:var(--s2);padding:8px 10px;border-radius:3px;font-size:12px">${esc(c.review)}</div>`;
   if(c.handoff_reason)postH+=`<div class="slbl">Handoff reason</div><div style="background:var(--wns);padding:8px 10px;border-radius:3px;font-size:12px">${esc(c.handoff_reason)}</div>`;
 
-  // Transcript panel — scenario + ndoa status first, then recording, then transcript
   let txH='';
   txH+=`<div class="txstatus">
    <div class="item"><div class="k">Scenario</div><div class="v">${esc(scn)||'—'}</div></div>
@@ -373,9 +412,7 @@ function renderDet(id){
   <div class="tl">${callsH}</div>
  </div>`;
 
- // Wire up call expand/collapse
  d.querySelectorAll('.call .ch').forEach(h=>h.onclick=()=>h.parentElement.classList.toggle('open'));
- // Wire up inner tabs
  d.querySelectorAll('.ctabs').forEach(tabs=>{
   tabs.querySelectorAll('.ctab').forEach(tab=>{
    tab.onclick=()=>{
@@ -388,7 +425,6 @@ function renderDet(id){
    };
   });
  });
- // Auto-open first connected call
  const fo=d.querySelector('.call.conn')||d.querySelector('.call');
  if(fo)fo.classList.add('open');
  d.scrollTop=0;
