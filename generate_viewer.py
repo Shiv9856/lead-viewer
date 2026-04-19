@@ -595,18 +595,17 @@ $('#df').onchange=e=>{st.df=e.target.value||null;$('#dr').style.display=st.df?'i
 $('#dr').onclick=()=>{$('#df').value='';st.df=null;$('#dr').style.display='none';apply();renderFil()};
 $('#so').onchange=e=>{st.so=e.target.value;apply()};
 (()=>{const ds=D.map(firstCallDate).filter(Boolean).sort();if(ds.length){$('#df').min=ds[0];$('#df').max=ds[ds.length-1]}})();
-# renderFil();apply();
-# if(D.length)sel(D[0].id);
+
+
 renderFil(); apply();
 
-// Handle deep-link from other pages (e.g., calls.html → index.html#leadId)
 function initFromHash() {
-  const hashId = window.location.hash.slice(1);  // strip the '#'
+  const hashId = window.location.hash.slice(1); 
   if (hashId) {
     const decoded = decodeURIComponent(hashId);
     const match = D.find(l => l.id === decoded);
     if (match) {
-      // Ensure the lead is visible (clear filters if needed)
+      
       if (!st.fil.includes(decoded)) {
         st.fk = 'all';
         apply();
