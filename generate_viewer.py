@@ -1229,7 +1229,7 @@ function callRow(c){
  const hl=HL[c.hangup]||c.hangup||'';
  const ms=c.milestone?`<span class="badge ${MB[c.milestone]||'b-ne'}">${esc(ML[c.milestone]||c.milestone)}</span>`:'';
  const disp=c.dispose?esc(tr(c.dispose.replace(/_/g,' '),60)):'';
- return `<div class="call-row" onclick="window.location.href='index.html#${esc(c.leadId)}'">
+ return `<div class="call-row" onclick="window.open('index.html#${esc(c.leadId)}', '_blank')">
   <span class="cr-time">${timeStr}</span>
   <a class="cr-lead">${esc(c.leadId)}</a>
   ${c.city?`<span class="cr-city">${esc(c.city)}</span>`:''}
