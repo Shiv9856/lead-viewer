@@ -595,8 +595,40 @@ $('#df').onchange=e=>{st.df=e.target.value||null;$('#dr').style.display=st.df?'i
 $('#dr').onclick=()=>{$('#df').value='';st.df=null;$('#dr').style.display='none';apply();renderFil()};
 $('#so').onchange=e=>{st.so=e.target.value;apply()};
 (()=>{const ds=D.map(firstCallDate).filter(Boolean).sort();if(ds.length){$('#df').min=ds[0];$('#df').max=ds[ds.length-1]}})();
-renderFil();apply();
-if(D.length)sel(D[0].id);
+# renderFil();apply();
+# if(D.length)sel(D[0].id);
+renderFil(); apply();
+
+// Handle deep-link from other pages (e.g., calls.html → index.html#leadId)
+function initFromHash() {
+  const hashId = window.location.hash.slice(1);  // strip the '#'
+  if (hashId) {
+    const decoded = decodeURIComponent(hashId);
+    const match = D.find(l => l.id === decoded);
+    if (match) {
+      // Ensure the lead is visible (clear filters if needed)
+      if (!st.fil.includes(decoded)) {
+        st.fk = 'all';
+        apply();
+        renderFil();
+      }
+      sel(decoded);
+      // Scroll sidebar to the active item
+      setTimeout(() => {
+        const active = document.querySelector('.li.act');
+        if (active) active.scrollIntoView({ block: 'center' });
+      }, 50);
+      return true;
+    }
+  }
+  return false;
+}
+
+if (!initFromHash() && D.length) sel(D[0].id);
+
+// Also listen for hash changes (e.g., browser back/forward)
+window.addEventListener('hashchange', () => initFromHash());
+
 """
 
 
