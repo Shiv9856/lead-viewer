@@ -647,9 +647,8 @@ def build_index(shared_css, shared_js, data_json):
 # ============================================================
 # PAGE 2: ANALYTICS (analytics.html)
 # ============================================================
-
 ANALYTICS_CSS = r"""
-.wrap{padding:24px 36px;max-width:1280px;margin:0 auto}
+.wrap{padding:24px 36px;max-width:1340px;margin:0 auto}
 .page-title{font-family:'Instrument Serif',serif;font-size:36px;line-height:1.1;margin-bottom:6px}
 .page-sub{color:var(--tm);font-size:13px;margin-bottom:24px}
 .range-ctl{display:flex;gap:12px;align-items:center;padding:12px 16px;background:var(--s);border:1px solid var(--bd);border-radius:6px;margin-bottom:20px;flex-wrap:wrap}
@@ -660,22 +659,19 @@ ANALYTICS_CSS = r"""
 .range-ctl button:hover{border-color:var(--ac);color:var(--ac)}
 .range-ctl button.active{background:var(--ac);color:#fff;border-color:var(--ac)}
 
-.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:24px}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;margin-bottom:24px}
 .kpi{background:var(--s);border:1px solid var(--bd);border-radius:6px;padding:16px 18px;transition:border-color .15s}
 .kpi:hover{border-color:var(--ac)}
 .kpi .k-label{font-size:10px;color:var(--tf);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px}
 .kpi .k-val{font-family:'Instrument Serif',serif;font-size:32px;line-height:1;color:var(--tx)}
 .kpi .k-sub{font-size:11px;color:var(--tm);margin-top:4px}
-.kpi .k-trend{display:inline-block;font-size:10px;padding:1px 6px;border-radius:3px;margin-left:6px;font-family:'IBM Plex Mono',monospace}
-.kpi .k-up{background:var(--oks);color:var(--ok)}
-.kpi .k-dn{background:var(--dns);color:var(--dn)}
 
 .card{background:var(--s);border:1px solid var(--bd);border-radius:6px;padding:18px 20px;margin-bottom:16px}
-.card-h{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
+.card-h{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
 .card-t{font-family:'Instrument Serif',serif;font-style:italic;font-size:20px}
 .card-s{font-size:11px;color:var(--tm)}
 
-.tabs{display:flex;gap:0;border-bottom:1px solid var(--bd);margin-bottom:16px}
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--bd);margin-bottom:16px;flex-wrap:wrap}
 .tab{padding:9px 18px;font-size:12px;color:var(--tm);cursor:pointer;border-bottom:2px solid transparent;transition:all .1s;font-family:inherit;background:none;border-top:none;border-left:none;border-right:none}
 .tab:hover{color:var(--tx)}
 .tab.on{color:var(--ac);border-bottom-color:var(--ac);font-weight:500}
@@ -684,12 +680,12 @@ ANALYTICS_CSS = r"""
 /* Funnel */
 .funnel{display:flex;flex-direction:column;gap:2px;padding:8px 0}
 .f-row{display:flex;align-items:center;gap:12px;padding:6px 0}
-.f-label{width:160px;font-size:12px;color:var(--tx);font-weight:500}
+.f-label{width:160px;font-size:12px;color:var(--tx);font-weight:500;flex-shrink:0}
 .f-bar-wrap{flex:1;position:relative;height:30px;background:var(--s2);border-radius:3px;overflow:hidden}
-.f-bar{height:100%;background:linear-gradient(90deg,var(--ac) 0%,var(--ac) 100%);opacity:.85;transition:width .3s ease}
-.f-bar.s2{background:var(--in)}.f-bar.s3{background:var(--ok)}.f-bar.s4{background:var(--wn)}.f-bar.s5{background:var(--dn)}
+.f-bar{height:100%;opacity:.85;transition:width .3s ease;border-radius:3px}
+.f-bar.s1{background:var(--ac)}.f-bar.s2{background:var(--in)}.f-bar.s3{background:var(--ok)}.f-bar.s4{background:var(--wn)}.f-bar.s5{background:var(--dn)}
 .f-val{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-family:'IBM Plex Mono',monospace;font-size:12px;color:#fff;font-weight:500;text-shadow:0 1px 2px rgba(0,0,0,.3)}
-.f-pct{width:90px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--tm);text-align:right}
+.f-pct{width:90px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--tm);text-align:right;flex-shrink:0}
 
 /* Charts */
 .chart-wrap{position:relative;height:260px;margin-top:8px}
@@ -701,7 +697,6 @@ svg.chart{width:100%;height:100%;overflow:visible}
 svg.chart .axis-line{stroke:var(--bds);stroke-width:1}
 svg.chart .grid-line{stroke:var(--bd);stroke-width:.5;stroke-dasharray:2,3}
 svg.chart .axis-label{fill:var(--tf);font-size:10px;font-family:'IBM Plex Mono',monospace}
-svg.chart .axis-title{fill:var(--tm);font-size:10px;text-transform:uppercase;letter-spacing:.08em}
 svg.chart .bar{transition:opacity .15s}
 svg.chart .bar:hover{opacity:.75}
 svg.chart .line{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
@@ -713,29 +708,90 @@ svg.chart .area{opacity:.15}
 .tooltip.vis{opacity:1}
 
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-@media (max-width:900px){.grid-2{grid-template-columns:1fr}}
-
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+@media(max-width:1100px){.grid-3{grid-template-columns:1fr 1fr}}
+@media(max-width:900px){.grid-2{grid-template-columns:1fr}.grid-3{grid-template-columns:1fr}}
 .empty-state{text-align:center;padding:40px 20px;color:var(--tf);font-style:italic;font-family:'Instrument Serif',serif;font-size:18px}
+
+/* ---- Horizontal bar chart reusable ---- */
+.hbar-chart{display:flex;flex-direction:column;gap:4px}
+.hbar-row{display:flex;align-items:center;gap:10px;padding:3px 0}
+.hbar-lbl{width:140px;font-size:11px;color:var(--tx);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0}
+.hbar-track{flex:1;height:22px;background:var(--s2);border-radius:3px;overflow:hidden;position:relative}
+.hbar-fill{height:100%;border-radius:3px;transition:width .3s}
+.hbar-val{width:80px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--tm);text-align:right;flex-shrink:0}
+
+/* ---- Heatmap ---- */
+.hmap-wrap{overflow-x:auto}
+.hmap{display:grid;grid-template-columns:60px repeat(24,1fr);gap:2px;min-width:600px}
+.hmap-cell{aspect-ratio:1.4;border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:9px;cursor:default;transition:transform .1s;position:relative;min-height:28px}
+.hmap-cell:hover{transform:scale(1.15);z-index:2}
+.hmap-hdr{font-size:9px;color:var(--tf);display:flex;align-items:center;justify-content:center;text-transform:uppercase;letter-spacing:.05em}
+.hmap-row-hdr{font-size:10px;color:var(--tm);display:flex;align-items:center;justify-content:flex-end;padding-right:6px}
+.heat-0{background:var(--s2);color:var(--tf)}.heat-1{background:#ef5350;color:#fff}
+.heat-2{background:#ff9800;color:#fff}.heat-3{background:#ffc107;color:#222}
+.heat-4{background:#8bc34a;color:#fff}.heat-5{background:#4caf50;color:#fff}
+.hmap-filter{display:flex;gap:8px;align-items:center;margin-bottom:12px;font-size:11px;color:var(--tm)}
+.hmap-filter select{padding:4px 8px;border:1px solid var(--bds);border-radius:4px;font-family:inherit;font-size:11px;background:var(--bg);color:var(--tx)}
+.hmap-scale{display:flex;gap:6px;align-items:center;font-size:10px;color:var(--tf);margin-top:8px}
+.hmap-scale span{width:18px;height:12px;border-radius:2px;display:inline-block}
+
+/* ---- Data tables ---- */
+.dtable{width:100%;border-collapse:collapse;font-size:12px}
+.dtable th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--tf);padding:8px 10px;border-bottom:2px solid var(--bd);font-weight:500}
+.dtable td{padding:8px 10px;border-bottom:1px solid var(--bd);color:var(--tx);vertical-align:middle}
+.dtable tr:hover td{background:var(--s2)}
+.dtable .mono{font-family:'IBM Plex Mono',monospace;font-size:11px}
+.dtable .lead-link{color:var(--in);cursor:pointer;text-decoration:none;font-family:'IBM Plex Mono',monospace;font-size:11px}
+.dtable .lead-link:hover{text-decoration:underline}
+.dtable .num{text-align:right}
+.dtable .nowrap{white-space:nowrap}
+
+/* ---- Donut chart ---- */
+.donut-wrap{display:flex;align-items:center;gap:32px;flex-wrap:wrap;justify-content:center}
+.donut-svg{flex-shrink:0}
+.donut-legend{display:flex;flex-direction:column;gap:6px;font-size:12px}
+.donut-legend .dl-row{display:flex;align-items:center;gap:8px}
+.donut-legend .dl-sw{width:12px;height:12px;border-radius:3px;flex-shrink:0}
+.donut-legend .dl-label{color:var(--tx)}
+.donut-legend .dl-val{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--tm);margin-left:auto;padding-left:12px}
+
+/* ---- Arrow indicators ---- */
+.arr-up{color:var(--ok)}.arr-dn{color:var(--dn)}.arr-flat{color:var(--tf)}
+
+/* ---- Visit funnel specific ---- */
+.visit-funnel{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;text-align:center}
+.vf-item{background:var(--s2);border-radius:6px;padding:16px 12px}
+.vf-item .vf-val{font-family:'Instrument Serif',serif;font-size:28px;color:var(--tx)}
+.vf-item .vf-lbl{font-size:10px;color:var(--tf);text-transform:uppercase;letter-spacing:.08em;margin-top:4px}
+.vf-item .vf-pct{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--tm);margin-top:2px}
+.vf-item.vf-ok{border-bottom:3px solid var(--ok)}.vf-item.vf-wn{border-bottom:3px solid var(--wn)}
+.vf-item.vf-dn{border-bottom:3px solid var(--dn)}.vf-item.vf-in{border-bottom:3px solid var(--in)}
+
+/* Card tool-select */
+.card-tool{padding:4px 8px;border:1px solid var(--bds);border-radius:4px;font-family:inherit;font-size:11px;background:var(--bg);color:var(--tx);outline:none}
 """
 
 ANALYTICS_BODY = '''<div class="wrap">
 <div class="page-title">Analytics</div>
-<div class="page-sub">Funnels, daily trends, and engagement patterns across your lead pipeline.</div>
+<div class="page-sub">Connectivity, duration, pipeline, engagement, timing, and operational analytics across your lead pipeline.</div>
 
 <div class="range-ctl">
  <div class="grp"><label>From</label><input type="date" id="rFrom"></div>
  <div class="grp"><label>To</label><input type="date" id="rTo"></div>
  <div class="grp" style="margin-left:auto">
-  <button data-preset="7">Last 7 days</button>
-  <button data-preset="14">Last 14 days</button>
+  <button data-preset="7">Last 7</button>
+  <button data-preset="14">Last 14</button>
   <button data-preset="all" class="active">All</button>
  </div>
 </div>
 
+<!-- KPIs -->
 <div class="kpi-row" id="kpis"></div>
 
-<div class="card">
- <div class="card-h"><div class="card-t">Conversion funnel</div><div class="card-s">Flow of leads & calls through each stage</div></div>
+<!-- Conversion Funnel -->
+<div class="card" id="card-funnel">
+ <div class="card-h"><div class="card-t">Conversion funnel</div><div class="card-s">Leads &amp; calls through each stage</div></div>
  <div class="tabs">
   <button class="tab on" data-tab="f-stage">Lead stage</button>
   <button class="tab" data-tab="f-call">Call outcome</button>
@@ -746,6 +802,75 @@ ANALYTICS_BODY = '''<div class="wrap">
  <div class="panel" id="f-intent"></div>
 </div>
 
+<!-- Connectivity Analysis -->
+<div class="card" id="card-conn">
+ <div class="card-h"><div class="card-t">Connectivity analysis</div><div class="card-s">Pickup rates, hangup reasons &amp; best calling windows</div></div>
+ <div class="tabs">
+  <button class="tab on" data-tab="p-hangup">Hangup breakdown</button>
+  <button class="tab" data-tab="p-heatmap">Calling heatmap</button>
+  <button class="tab" data-tab="p-retry">Retry effectiveness</button>
+  <button class="tab" data-tab="p-short">Short calls</button>
+ </div>
+ <div class="panel on" id="p-hangup"></div>
+ <div class="panel" id="p-heatmap"></div>
+ <div class="panel" id="p-retry"></div>
+ <div class="panel" id="p-short"></div>
+</div>
+
+<!-- Duration Analysis -->
+<div class="card" id="card-dur">
+ <div class="card-h"><div class="card-t">Duration insights</div><div class="card-s">How call length relates to scenarios &amp; outcomes</div></div>
+ <div class="tabs">
+  <button class="tab on" data-tab="p-durscn">By scenario</button>
+  <button class="tab" data-tab="p-durout">Duration vs milestone</button>
+ </div>
+ <div class="panel on" id="p-durscn"></div>
+ <div class="panel" id="p-durout"></div>
+</div>
+
+<!-- Pipeline Analysis -->
+<div class="card" id="card-pipe">
+ <div class="card-h"><div class="card-t">Pipeline analysis</div><div class="card-s">Velocity, stalled leads &amp; regressions</div></div>
+ <div class="tabs">
+  <button class="tab on" data-tab="p-velocity">Velocity</button>
+  <button class="tab" data-tab="p-stalled">Stalled leads</button>
+  <button class="tab" data-tab="p-regress">Regressions</button>
+ </div>
+ <div class="panel on" id="p-velocity"></div>
+ <div class="panel" id="p-stalled"></div>
+ <div class="panel" id="p-regress"></div>
+</div>
+
+<!-- Visit Outcomes + Call Gap -->
+<div class="grid-2">
+ <div class="card" id="card-visit">
+  <div class="card-h"><div class="card-t">Visit outcomes</div><div class="card-s">Scheduled → completed vs cancelled</div></div>
+  <div id="p-visit"></div>
+ </div>
+ <div class="card" id="card-gap">
+  <div class="card-h"><div class="card-t">Optimal call gap</div><div class="card-s">Pickup &amp; conversion rate by time between calls</div></div>
+  <div id="p-gap"></div>
+ </div>
+</div>
+
+<!-- Engagement + Scenario Dist -->
+<div class="grid-2">
+ <div class="card" id="card-engage">
+  <div class="card-h"><div class="card-t">Engagement signals</div><div class="card-s">Preference deepening &amp; budget shifts over calls</div></div>
+  <div class="tabs">
+   <button class="tab on" data-tab="p-pref">Pref deepening</button>
+   <button class="tab" data-tab="p-budget">Budget shift</button>
+  </div>
+  <div class="panel on" id="p-pref"></div>
+  <div class="panel" id="p-budget"></div>
+ </div>
+ <div class="card" id="card-scenario">
+  <div class="card-h"><div class="card-t">Scenario distribution</div><div class="card-s">Call mix by scenario type</div></div>
+  <div id="p-scenario"></div>
+ </div>
+</div>
+
+<!-- Daily Charts (existing) -->
 <div class="grid-2">
  <div class="card">
   <div class="card-h"><div class="card-t">Daily call volume</div><div class="card-s">Attempted vs Connected</div></div>
@@ -755,9 +880,8 @@ ANALYTICS_BODY = '''<div class="wrap">
    <div class="lg-item"><span class="lg-sw" style="background:var(--ok)"></span>Connected</div>
   </div>
  </div>
-
  <div class="card">
-  <div class="card-h"><div class="card-t">Daily conversion rate</div><div class="card-s">Calls → TD booked</div></div>
+  <div class="card-h"><div class="card-t">Daily conversion rate</div><div class="card-s">Connected → Converted (%)</div></div>
   <div class="chart-wrap"><svg class="chart" id="ch-conv"></svg></div>
   <div class="chart-legend">
    <div class="lg-item"><span class="lg-sw" style="background:var(--ac)"></span>Conv rate (%)</div>
@@ -766,7 +890,7 @@ ANALYTICS_BODY = '''<div class="wrap">
 </div>
 
 <div class="card">
- <div class="card-h"><div class="card-t">Milestone distribution over time</div><div class="card-s">Stacked area of which milestone calls reach each day</div></div>
+ <div class="card-h"><div class="card-t">Milestone distribution over time</div><div class="card-s">Stacked area of milestone per day</div></div>
  <div class="chart-wrap" style="height:300px"><svg class="chart" id="ch-ms"></svg></div>
  <div class="chart-legend" id="ch-ms-lg"></div>
 </div>
@@ -775,330 +899,550 @@ ANALYTICS_BODY = '''<div class="wrap">
  <div class="card-h"><div class="card-t">Avg call duration trend</div><div class="card-s">Mean duration of connected calls per day</div></div>
  <div class="chart-wrap"><svg class="chart" id="ch-dur"></svg></div>
  <div class="chart-legend">
-  <div class="lg-item"><span class="lg-sw" style="background:var(--in)"></span>Avg duration (connected)</div>
+  <div class="lg-item"><span class="lg-sw" style="background:var(--in)"></span>Avg duration (s)</div>
  </div>
 </div>
 
 <div class="tooltip" id="tt"></div>
 </div>'''
 
+
 ANALYTICS_JS = r"""
-// ---- state ----
+// ========== STATE ==========
 const ast={from:null,to:null,preset:'all'};
 const allBuckets=buildDailyBuckets(D);
 const allDates=allBuckets.map(b=>b.date);
 const minD=allDates[0]||fdate(new Date());
 const maxD=allDates[allDates.length-1]||fdate(new Date());
-
-// ---- date range controls ----
 $('#rFrom').min=minD;$('#rFrom').max=maxD;
 $('#rTo').min=minD;$('#rTo').max=maxD;
 
+// ========== DATE RANGE ==========
 function setPreset(p){
  ast.preset=p;
  document.querySelectorAll('.range-ctl button[data-preset]').forEach(b=>b.classList.toggle('active',b.dataset.preset===p));
  if(p==='all'){ast.from=minD;ast.to=maxD}
- else{
-  const n=parseInt(p);
-  const end=new Date(maxD);
-  const start=new Date(end);start.setDate(start.getDate()-n+1);
-  const startStr=fdate(start);
-  ast.from=startStr<minD?minD:startStr;
-  ast.to=maxD;
- }
- $('#rFrom').value=ast.from;$('#rTo').value=ast.to;
- render();
+ else{const n=parseInt(p);const end=new Date(maxD);const start=new Date(end);start.setDate(start.getDate()-n+1);
+  const ss=fdate(start);ast.from=ss<minD?minD:ss;ast.to=maxD;}
+ $('#rFrom').value=ast.from;$('#rTo').value=ast.to;render();
 }
-
 $('#rFrom').onchange=e=>{ast.from=e.target.value||minD;ast.preset='';document.querySelectorAll('.range-ctl button[data-preset]').forEach(b=>b.classList.remove('active'));render()};
 $('#rTo').onchange=e=>{ast.to=e.target.value||maxD;ast.preset='';document.querySelectorAll('.range-ctl button[data-preset]').forEach(b=>b.classList.remove('active'));render()};
 document.querySelectorAll('.range-ctl button[data-preset]').forEach(b=>b.onclick=()=>setPreset(b.dataset.preset));
 
-// tabs
-document.querySelectorAll('.tabs .tab').forEach(t=>{
- t.onclick=()=>{
-  document.querySelectorAll('.tabs .tab').forEach(x=>x.classList.remove('on'));
-  t.classList.add('on');
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
-  $('#'+t.dataset.tab).classList.add('on');
- };
-});
-
-// ---- filtered buckets ----
-function getFiltered(){
- return allBuckets.filter(b=>(!ast.from||b.date>=ast.from)&&(!ast.to||b.date<=ast.to));
-}
-
-// ---- FUNNEL BUILDERS ----
-function buildStageFunnel(buckets){
- // Lead stage: count leads (unique) whose best milestone reaches each stage within the range
- const leadIds=new Set();
- buckets.forEach(b=>b.calls.forEach(c=>leadIds.add(c.leadId)));
- const leads=D.filter(l=>leadIds.has(l.id));
- const bestMS={};
- leads.forEach(l=>{
-  let best=0,bestKey='';
-  l.calls.forEach(c=>{
-   const inRange=buckets.some(b=>b.calls.some(bc=>bc.leadId===l.id&&callDate(c)===b.date));
-   if(!inRange)return;
-   const ord=MO[c.milestone]||0;
-   if(ord>best){best=ord;bestKey=c.milestone}
+// ========== SCOPED TAB HANDLER ==========
+function wireTabs(){
+ document.querySelectorAll('.card').forEach(card=>{
+  card.querySelectorAll('.tabs .tab').forEach(t=>{
+   t.onclick=()=>{
+    card.querySelectorAll('.tabs .tab').forEach(x=>x.classList.remove('on'));
+    t.classList.add('on');
+    card.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+    const panel=card.querySelector('#'+t.dataset.tab);
+    if(panel)panel.classList.add('on');
+   };
   });
-  bestMS[l.id]={best,bestKey};
  });
- const count=ms=>Object.values(bestMS).filter(x=>(MO[x.bestKey]||0)>=(MO[ms]||0)).length;
- const conv=leads.filter(l=>l.calls.some(c=>c.conversion&&buckets.some(b=>b.date===callDate(c)))).length;
- return [
-  {label:'Fresh',val:count('fresh_lead')+Object.values(bestMS).filter(x=>!x.bestKey).length},
-  {label:'Minimal',val:count('minimal_engagement')},
-  {label:'Prefs',val:count('preference_collected')},
-  {label:'Pitched',val:count('car_pitched')},
-  {label:'TD Sched',val:count('test_drive_scheduled')},
-  {label:'Converted',val:conv},
- ];
+}
+wireTabs();
+
+// ========== HELPERS ==========
+function getFiltered(){return allBuckets.filter(b=>(!ast.from||b.date>=ast.from)&&(!ast.to||b.date<=ast.to))}
+function getCSSVar(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()}
+const COLORS=['#5c6bc0','#26a69a','#ef5350','#ffa726','#ab47bc','#8d6e63','#42a5f5','#66bb6a','#ec407a','#78909c'];
+function callDateOf(c){const t=pd(c.time);if(t)return fdate(t);return c.date||''}
+function leadOf(id){return D.find(l=>l.id===id)}
+
+// ========== DATA BUILDERS ==========
+
+// Existing funnels
+function buildStageFunnel(bkts){
+ const lids=new Set();bkts.forEach(b=>b.calls.forEach(c=>lids.add(c.leadId)));
+ const leads=D.filter(l=>lids.has(l.id));
+ const best={};
+ leads.forEach(l=>{let b=0,bk='';
+  l.calls.forEach(c=>{const o=MO[c.milestone]||0;if(o>b){b=o;bk=c.milestone}});
+  best[l.id]={o:b,k:bk};
+ });
+ const cnt=ms=>Object.values(best).filter(x=>(MO[x.k]||0)>=(MO[ms]||0)).length;
+ const conv=leads.filter(l=>l.calls.some(c=>c.conversion)).length;
+ return [{label:'Fresh',val:cnt('fresh_lead')+Object.values(best).filter(x=>!x.k).length},
+  {label:'Minimal',val:cnt('minimal_engagement')},{label:'Prefs collected',val:cnt('preference_collected')},
+  {label:'Car pitched',val:cnt('car_pitched')},{label:'TD scheduled',val:cnt('test_drive_scheduled')},
+  {label:'Converted',val:conv}];
+}
+function buildCallFunnel(bkts){
+ const c=bkts.flatMap(b=>b.calls);
+ return [{label:'Attempted',val:c.length},{label:'Connected',val:c.filter(x=>x.connected).length},
+  {label:'Engaged',val:c.filter(x=>x.connected&&x.milestone&&x.milestone!=='fresh_lead').length},
+  {label:'Pitched',val:c.filter(x=>x.car_pitched).length},{label:'Converted',val:c.filter(x=>x.conversion).length}];
+}
+function buildIntentFunnel(bkts){
+ const lids=new Set();bkts.forEach(b=>b.calls.forEach(c=>lids.add(c.leadId)));
+ const leads=D.filter(l=>lids.has(l.id));
+ const rc=l=>l.calls.filter(c=>bkts.some(b=>b.calls.some(bc=>bc===c||bc.leadId===l.id&&b.date===callDateOf(c))));
+ return [{label:'All leads',val:leads.length},
+  {label:'Interested',val:leads.filter(l=>l.calls.some(c=>c.interested_buying)).length},
+  {label:'TD booked',val:leads.filter(l=>l.calls.some(c=>c.interested_for_td)).length},
+  {label:'Visit confirmed',val:leads.filter(l=>l.calls.some(c=>c.confirmed_visit)).length}];
 }
 
-function buildCallFunnel(buckets){
- const calls=buckets.flatMap(b=>b.calls);
- return [
-  {label:'Attempted',val:calls.length},
-  {label:'Connected',val:calls.filter(c=>c.connected).length},
-  {label:'Engaged',val:calls.filter(c=>c.connected&&c.milestone&&c.milestone!=='fresh_lead').length},
-  {label:'Pitched',val:calls.filter(c=>c.car_pitched).length},
-  {label:'Converted',val:calls.filter(c=>c.conversion).length},
- ];
+// 1. Hangup breakdown
+function buildHangupBreakdown(bkts){
+ const calls=bkts.flatMap(b=>b.calls);const cts={};
+ calls.forEach(c=>{const h=c.hangup||'unknown';cts[h]=(cts[h]||0)+1});
+ return Object.entries(cts).map(([k,v])=>({label:HL[k]||k,key:k,count:v,pct:calls.length?(v/calls.length*100):0})).sort((a,b)=>b.count-a.count);
 }
 
-function buildIntentFunnel(buckets){
- const leadIds=new Set();
- buckets.forEach(b=>b.calls.forEach(c=>leadIds.add(c.leadId)));
- const leads=D.filter(l=>leadIds.has(l.id));
- const rCalls=l=>l.calls.filter(c=>buckets.some(b=>b.date===callDate(c)));
- return [
-  {label:'All leads',val:leads.length},
-  {label:'Interested',val:leads.filter(l=>rCalls(l).some(c=>c.interested_buying)).length},
-  {label:'TD booked',val:leads.filter(l=>rCalls(l).some(c=>c.interested_for_td)).length},
-  {label:'TD visited',val:leads.filter(l=>rCalls(l).some(c=>c.confirmed_visit)).length},
- ];
+// 2. Heatmap
+function buildHeatmap(bkts,cityFilter){
+ const calls=bkts.flatMap(b=>b.calls);
+ const filtered=cityFilter&&cityFilter!=='all'?calls.filter(c=>{const l=leadOf(c.leadId);return l&&l.city===cityFilter}):calls;
+ const grid=Array.from({length:7},()=>Array.from({length:24},()=>({t:0,c:0})));
+ filtered.forEach(c=>{const t=pd(c.time);if(!t)return;grid[t.getDay()][t.getHours()].t++;if(c.connected)grid[t.getDay()][t.getHours()].c++});
+ return grid;
 }
 
-function renderFunnel(containerId,rows,klass){
- const max=rows.length?rows[0].val:0;
- const c=$('#'+containerId);
- if(!max){c.innerHTML='<div class="empty-state">No data in selected range</div>';return}
+// 3. Retry effectiveness
+function buildRetry(bkts){
+ const dates=new Set(bkts.map(b=>b.date));const att={};
+ D.forEach(l=>{l.calls.forEach((c,i)=>{
+  if(!dates.has(callDateOf(c)))return;
+  const k=Math.min(i+1,6);const key=k>=6?'6+':String(k);
+  if(!att[key])att[key]={t:0,c:0};att[key].t++;if(c.connected)att[key].c++;
+ })});
+ return Object.entries(att).map(([k,v])=>({attempt:k,total:v.t,connected:v.c,rate:v.t?(v.c/v.t*100):0}))
+  .sort((a,b)=>{const na=a.attempt==='6+'?6:+a.attempt;const nb=b.attempt==='6+'?6:+b.attempt;return na-nb});
+}
+
+// 4. Short calls
+function buildShortCalls(bkts){
+ const calls=bkts.flatMap(b=>b.calls);const conn=calls.filter(c=>c.connected);
+ const short=conn.filter(c=>c.duration!=null&&c.duration<5);
+ return {count:short.length,total:conn.length,pct:conn.length?(short.length/conn.length*100):0,calls:short.slice(0,25)};
+}
+
+// 5. Duration by scenario
+function buildDurByScenario(bkts){
+ const calls=bkts.flatMap(b=>b.calls).filter(c=>c.connected&&c.duration);const g={};
+ calls.forEach(c=>{const s=(c.scenario||'Unknown').replace(/^S\d+_/,'').replace(/_/g,' ');if(!g[s])g[s]=[];g[s].push(c.duration)});
+ return Object.entries(g).map(([k,v])=>({scenario:k,avg:v.reduce((a,b)=>a+b,0)/v.length,count:v.length,max:Math.max(...v)})).sort((a,b)=>b.avg-a.avg);
+}
+
+// 6. Duration vs milestone
+function buildDurVsMilestone(bkts){
+ const calls=bkts.flatMap(b=>b.calls).filter(c=>c.connected&&c.duration&&c.milestone);const g={};
+ calls.forEach(c=>{if(!g[c.milestone])g[c.milestone]=[];g[c.milestone].push(c.duration)});
+ return Object.entries(g).map(([k,v])=>({milestone:k,label:ML[k]||k,order:MO[k]||0,avg:v.reduce((a,b)=>a+b,0)/v.length,count:v.length})).sort((a,b)=>a.order-b.order);
+}
+
+// 7. Pipeline velocity
+function buildVelocity(bkts){
+ const dates=new Set(bkts.map(b=>b.date));const trans=[];
+ D.forEach(l=>{
+  const rc=l.calls.filter(c=>dates.has(callDateOf(c)));if(rc.length<2)return;
+  let lm=null,ld=null,cs=0;
+  rc.forEach(c=>{cs++;const m=c.milestone;const d=callDateOf(c);
+   if(m&&m!==lm){if(lm&&(MO[m]||0)>(MO[lm]||0)){
+    const dd=ld&&d?Math.max(0,(new Date(d)-new Date(ld))/864e5):0;
+    trans.push({from:lm,to:m,calls:cs,days:dd});}lm=m;ld=d;cs=0;}});
+ });
+ const agg={};
+ trans.forEach(t=>{const k=t.from+'→'+t.to;if(!agg[k])agg[k]={from:t.from,to:t.to,cl:[],dl:[]};agg[k].cl.push(t.calls);agg[k].dl.push(t.days)});
+ return Object.values(agg).map(a=>({from:ML[a.from]||a.from,to:ML[a.to]||a.to,fk:a.from,tk:a.to,
+  avgCalls:(a.cl.reduce((s,v)=>s+v,0)/a.cl.length).toFixed(1),
+  avgDays:(a.dl.reduce((s,v)=>s+v,0)/a.dl.length).toFixed(1),
+  count:a.cl.length})).sort((a,b)=>(MO[a.fk]||0)-(MO[b.fk]||0));
+}
+
+// 8. Stalled leads
+function buildStalled(bkts,min=3){
+ const dates=new Set(bkts.map(b=>b.date));const res=[];
+ D.forEach(l=>{
+  const rc=l.calls.filter(c=>dates.has(callDateOf(c)));if(rc.length<min)return;
+  const last=rc.slice(-min);const ms=last.map(c=>c.milestone).filter(Boolean);
+  if(ms.length>=min&&ms.every(m=>m===ms[0])){
+   const lc=rc[rc.length-1];
+   res.push({id:l.id,city:l.city,milestone:ms[0],mlabel:ML[ms[0]]||ms[0],stuck:ms.length,total:rc.length,lastDate:callDateOf(lc)});}
+ });
+ return res.sort((a,b)=>b.stuck-a.stuck);
+}
+
+// 9. Regressions
+function buildRegressions(bkts){
+ const dates=new Set(bkts.map(b=>b.date));const res=[];
+ D.forEach(l=>{
+  const rc=l.calls.filter(c=>dates.has(callDateOf(c)));let peak=0,pm='';
+  rc.forEach((c,i)=>{const o=MO[c.milestone]||0;
+   if(o>peak){peak=o;pm=c.milestone}
+   else if(c.milestone&&o<peak&&o>0){res.push({id:l.id,city:l.city,from:pm,fl:ML[pm]||pm,to:c.milestone,tl:ML[c.milestone]||c.milestone,call:i+1,date:callDateOf(c)})}
+  });
+ });
+ return res;
+}
+
+// 10. Visit outcomes
+function buildVisitOutcomes(bkts){
+ const dates=new Set(bkts.map(b=>b.date));const st={};
+ D.forEach(l=>{
+  l.calls.filter(c=>dates.has(callDateOf(c))).forEach(c=>{
+   if(c.confirmed_visit)st[l.id]='confirmed';
+   else if(c.cancellation&&st[l.id]!=='confirmed')st[l.id]='cancelled';
+   else if(c.rescheduled&&!['confirmed','cancelled'].includes(st[l.id]))st[l.id]='rescheduled';
+   else if((c.milestone==='test_drive_scheduled'||c.selected_td_slot||c.interested_for_td)&&!st[l.id])st[l.id]='scheduled';
+  });
+ });
+ const v=Object.values(st);
+ return {total:v.length,scheduled:v.filter(s=>s==='scheduled').length,confirmed:v.filter(s=>s==='confirmed').length,
+  cancelled:v.filter(s=>s==='cancelled').length,rescheduled:v.filter(s=>s==='rescheduled').length};
+}
+
+// 11. Call gap analysis
+function buildGapAnalysis(bkts){
+ const dates=new Set(bkts.map(b=>b.date));const gaps=[];
+ D.forEach(l=>{const rc=l.calls.filter(c=>dates.has(callDateOf(c)));
+  for(let i=1;i<rc.length;i++){const p=pd(rc[i-1].time),c2=pd(rc[i].time);if(!p||!c2)continue;
+   const gh=(c2-p)/36e5;if(gh<0)continue;gaps.push({gap:gh,conn:rc[i].connected,conv:rc[i].conversion})}});
+ const ranges=[{l:'< 1h',a:0,b:1},{l:'1-4h',a:1,b:4},{l:'4-12h',a:4,b:12},{l:'12-24h',a:12,b:24},
+  {l:'1-2 days',a:24,b:48},{l:'2-3 days',a:48,b:72},{l:'3-7 days',a:72,b:168},{l:'7+ days',a:168,b:1e9}];
+ return ranges.map(r=>{const f=gaps.filter(g=>g.gap>=r.a&&g.gap<r.b);const cn=f.filter(g=>g.conn);
+  return {label:r.l,total:f.length,connected:cn.length,conv:f.filter(g=>g.conv).length,
+   pickupRate:f.length?(cn.length/f.length*100):0,convRate:cn.length?(f.filter(g=>g.conv).length/cn.length*100):0}}).filter(r=>r.total>0);
+}
+
+// 12. Pref deepening
+function buildPrefDeepening(bkts){
+ const dates=new Set(bkts.map(b=>b.date));
+ const fields=['user_fuel','user_trans','user_body','user_make','user_model','user_color','user_seats','user_budget_min','user_budget_max'];
+ const byAtt={};
+ D.forEach(l=>{l.calls.forEach((c,i)=>{if(!dates.has(callDateOf(c))||!c.connected)return;
+  const k=Math.min(i+1,8);const key=k>=8?'8+':String(k);if(!byAtt[key])byAtt[key]=[];
+  byAtt[key].push(fields.filter(f=>c[f]&&c[f]!=='').length)})});
+ return Object.entries(byAtt).map(([k,v])=>({attempt:k,avg:(v.reduce((a,b)=>a+b,0)/v.length).toFixed(1),count:v.length}))
+  .sort((a,b)=>{const na=a.attempt==='8+'?8:+a.attempt;const nb=b.attempt==='8+'?8:+b.attempt;return na-nb});
+}
+
+// 13. Budget shift
+function buildBudgetShift(bkts){
+ const dates=new Set(bkts.map(b=>b.date));const res=[];
+ D.forEach(l=>{const rc=l.calls.filter(c=>dates.has(callDateOf(c)));
+  const bc=rc.filter(c=>c.user_budget_min||c.user_budget_max);if(bc.length<2)return;
+  const f=bc[0],la=bc[bc.length-1];
+  const fmid=((+f.user_budget_min||0)+(+f.user_budget_max||0))/2||(+f.user_budget_min||+f.user_budget_max||0);
+  const lmid=((+la.user_budget_min||0)+(+la.user_budget_max||0))/2||(+la.user_budget_min||+la.user_budget_max||0);
+  if(fmid&&lmid)res.push({id:l.id,city:l.city,first:fmid,last:lmid,shift:lmid-fmid,pct:fmid?((lmid-fmid)/fmid*100):0})});
+ return res.sort((a,b)=>Math.abs(b.pct)-Math.abs(a.pct));
+}
+
+// 14. Scenario distribution
+function buildScenarioDist(bkts){
+ const calls=bkts.flatMap(b=>b.calls);const cts={};
+ calls.forEach(c=>{const s=(c.scenario||'Unknown').replace(/^S\d+_/,'').replace(/_/g,' ');cts[s]=(cts[s]||0)+1});
+ const t=calls.length;
+ return Object.entries(cts).map(([k,v])=>({scenario:k,count:v,pct:t?(v/t*100):0})).sort((a,b)=>b.count-a.count);
+}
+
+// ========== RENDERERS ==========
+
+// Funnel
+function renderFunnel(id,rows){
+ const max=rows.length?rows[0].val:0;const c=$('#'+id);
+ if(!max){c.innerHTML='<div class="empty-state">No data</div>';return}
  c.innerHTML='<div class="funnel">'+rows.map((r,i)=>{
   const pct=max?(r.val/max*100).toFixed(0):0;
-  const overall=max?(r.val/max*100).toFixed(1):0;
   return `<div class="f-row"><div class="f-label">${esc(r.label)}</div>
    <div class="f-bar-wrap"><div class="f-bar s${(i%5)+1}" style="width:${pct}%"></div><div class="f-val">${r.val}</div></div>
-   <div class="f-pct">${overall}%</div></div>`;
+   <div class="f-pct">${(r.val/max*100).toFixed(1)}%</div></div>`;
  }).join('')+'</div>';
 }
 
-// ---- KPIs ----
-function renderKPIs(buckets){
- const calls=buckets.flatMap(b=>b.calls);
- const leadIds=new Set();calls.forEach(c=>leadIds.add(c.leadId));
- const totalCalls=calls.length;
- const conn=calls.filter(c=>c.connected).length;
- const connPct=totalCalls?(conn/totalCalls*100).toFixed(1):0;
- const conv=calls.filter(c=>c.conversion).length;
- const convPct=conn?(conv/conn*100).toFixed(1):0;
- const avgDur=conn?(calls.filter(c=>c.connected&&c.duration).reduce((s,c)=>s+c.duration,0)/conn):0;
- const dnd=calls.filter(c=>c.mark_dnd).length;
- const handoff=calls.filter(c=>c.handoff).length;
- const pitched=calls.filter(c=>c.car_pitched).length;
-
+// KPIs
+function renderKPIs(bkts){
+ const calls=bkts.flatMap(b=>b.calls);const lids=new Set();calls.forEach(c=>lids.add(c.leadId));
+ const t=calls.length,cn=calls.filter(c=>c.connected).length,cnP=t?(cn/t*100).toFixed(1):0;
+ const cv=calls.filter(c=>c.conversion).length,cvP=cn?(cv/cn*100).toFixed(1):0;
+ const avgD=cn?(calls.filter(c=>c.connected&&c.duration).reduce((s,c)=>s+c.duration,0)/cn):0;
+ const pit=calls.filter(c=>c.car_pitched).length;
+ const dnd=calls.filter(c=>c.mark_dnd).length,ho=calls.filter(c=>c.handoff).length;
+ const sc=calls.filter(c=>c.connected&&c.duration!=null&&c.duration<5).length;
+ const td=calls.filter(c=>c.interested_for_td).length;
  const kpis=[
-  {k:'Leads reached',v:leadIds.size,sub:`${buckets.length} day${buckets.length===1?'':'s'}`},
-  {k:'Total calls',v:totalCalls.toLocaleString(),sub:`${conn} connected · ${connPct}%`},
-  {k:'Conversion rate',v:convPct+'%',sub:`${conv} of ${conn} connected`},
-  {k:'Avg call duration',v:fdur(avgDur),sub:'connected calls'},
-  {k:'Pitched',v:pitched,sub:totalCalls?`${(pitched/totalCalls*100).toFixed(0)}% of calls`:''},
-  {k:'DND + Handoff',v:dnd+handoff,sub:`${dnd} DND · ${handoff} handoff`},
+  {k:'Leads',v:lids.size,s:bkts.length+' day'+(bkts.length===1?'':'s')},
+  {k:'Total calls',v:t.toLocaleString(),s:cn+' conn · '+cnP+'%'},
+  {k:'Conv rate',v:cvP+'%',s:cv+' of '+cn+' connected'},
+  {k:'Avg duration',v:fdur(avgD),s:'connected calls'},
+  {k:'Cars pitched',v:pit,s:t?(pit/t*100).toFixed(0)+'% of calls':''},
+  {k:'TD interest',v:td,s:cn?(td/cn*100).toFixed(0)+'% of connected':''},
+  {k:'DND / Handoff',v:dnd+ho,s:dnd+' DND · '+ho+' handoff'},
+  {k:'Short (<5s)',v:sc,s:cn?(sc/cn*100).toFixed(1)+'% of connected':''},
  ];
- $('#kpis').innerHTML=kpis.map(k=>`<div class="kpi"><div class="k-label">${esc(k.k)}</div><div class="k-val">${esc(String(k.v))}</div><div class="k-sub">${esc(k.sub)}</div></div>`).join('');
+ $('#kpis').innerHTML=kpis.map(k=>`<div class="kpi"><div class="k-label">${esc(k.k)}</div><div class="k-val">${esc(String(k.v))}</div><div class="k-sub">${esc(k.s)}</div></div>`).join('');
 }
 
-// ---- SVG chart helpers ----
-function getCSSVar(name){return getComputedStyle(document.documentElement).getPropertyValue(name).trim()}
+// Horizontal bars (reusable)
+function renderHBars(el,items,color){
+ const max=items.reduce((m,i)=>Math.max(m,i.val),0)||1;
+ el.innerHTML='<div class="hbar-chart">'+items.map(i=>{
+  const pct=(i.val/max*100).toFixed(0);
+  return `<div class="hbar-row"><div class="hbar-lbl">${esc(i.label)}</div>
+   <div class="hbar-track"><div class="hbar-fill" style="width:${pct}%;background:${color||'var(--ac)'}"></div></div>
+   <div class="hbar-val">${i.valStr||i.val}</div></div>`;
+ }).join('')+'</div>';
+}
+
+// Hangup breakdown
+function renderHangup(bkts){
+ const data=buildHangupBreakdown(bkts);
+ const el=$('#p-hangup');
+ if(!data.length){el.innerHTML='<div class="empty-state">No data</div>';return}
+ const items=data.map(d=>({label:d.label,val:d.count,valStr:d.count+' ('+d.pct.toFixed(1)+'%)'}));
+ renderHBars(el,items,'var(--in)');
+}
+
+// Heatmap
+function renderHeatmap(bkts){
+ const el=$('#p-heatmap');
+ // City filter
+ const cities=new Set();bkts.forEach(b=>b.calls.forEach(c=>{const l=leadOf(c.leadId);if(l&&l.city)cities.add(l.city)}));
+ const cityArr=['all',...[...cities].sort()];
+ let selCity='all';
+
+ function draw(){
+  const grid=buildHeatmap(bkts,selCity);
+  const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  let h='<div class="hmap-filter"><label>City:</label><select id="hmCity">'+cityArr.map(c=>`<option value="${esc(c)}"${c===selCity?' selected':''}>${c==='all'?'All cities':esc(c)}</option>`).join('')+'</select></div>';
+  h+='<div class="hmap-wrap"><div class="hmap">';
+  // Header row
+  h+='<div class="hmap-hdr"></div>';
+  for(let hr=0;hr<24;hr++)h+=`<div class="hmap-hdr">${hr}</div>`;
+  // Data rows
+  for(let d=0;d<7;d++){
+   h+=`<div class="hmap-row-hdr">${days[d]}</div>`;
+   for(let hr=0;hr<24;hr++){
+    const cell=grid[d][hr];const rate=cell.t?(cell.c/cell.t*100):0;
+    const cls=!cell.t?'heat-0':rate>=80?'heat-5':rate>=60?'heat-4':rate>=40?'heat-3':rate>=20?'heat-2':'heat-1';
+    h+=`<div class="hmap-cell ${cls}" title="${days[d]} ${hr}:00 — ${cell.c}/${cell.t} (${rate.toFixed(0)}%)">${cell.t?rate.toFixed(0)+'%':''}</div>`;
+   }
+  }
+  h+='</div></div>';
+  h+='<div class="hmap-scale"><span>Low</span><span class="heat-1" style="width:18px;height:12px;display:inline-block;border-radius:2px"></span><span class="heat-2" style="width:18px;height:12px;display:inline-block;border-radius:2px"></span><span class="heat-3" style="width:18px;height:12px;display:inline-block;border-radius:2px"></span><span class="heat-4" style="width:18px;height:12px;display:inline-block;border-radius:2px"></span><span class="heat-5" style="width:18px;height:12px;display:inline-block;border-radius:2px"></span><span>High</span></div>';
+  el.innerHTML=h;
+  const sel=el.querySelector('#hmCity');
+  if(sel)sel.onchange=e=>{selCity=e.target.value;draw()};
+ }
+ draw();
+}
+
+// Retry effectiveness
+function renderRetry(bkts){
+ const data=buildRetry(bkts);const el=$('#p-retry');
+ if(!data.length){el.innerHTML='<div class="empty-state">No data</div>';return}
+ let h='<div class="hbar-chart">';
+ const maxR=Math.max(...data.map(d=>d.rate),1);
+ data.forEach(d=>{
+  const pct=(d.rate/Math.max(maxR,100)*100).toFixed(0);
+  const color=d.rate>=50?'var(--ok)':d.rate>=30?'var(--wn)':'var(--dn)';
+  h+=`<div class="hbar-row"><div class="hbar-lbl">Attempt #${esc(d.attempt)}</div>
+   <div class="hbar-track"><div class="hbar-fill" style="width:${pct}%;background:${color}"></div></div>
+   <div class="hbar-val">${d.rate.toFixed(1)}% (${d.connected}/${d.total})</div></div>`;
+ });
+ h+='</div>';
+ el.innerHTML=h;
+}
+
+// Short calls
+function renderShortCalls(bkts){
+ const data=buildShortCalls(bkts);const el=$('#p-short');
+ let h=`<div style="margin-bottom:16px"><span style="font-size:24px;font-family:'Instrument Serif',serif">${data.count}</span>
+  <span style="color:var(--tm);font-size:13px"> short calls (&lt;5s connected) out of ${data.total} connected (${data.pct.toFixed(1)}%)</span></div>`;
+ if(data.calls.length){
+  h+='<table class="dtable"><thead><tr><th>Lead</th><th>City</th><th>Duration</th><th>Hangup</th><th>Date</th></tr></thead><tbody>';
+  data.calls.forEach(c=>{
+   const l=leadOf(c.leadId);
+   h+=`<tr><td><a class="lead-link" onclick="window.open('index.html#${esc(c.leadId)}','_blank')">${esc(c.leadId)}</a></td>
+    <td>${esc(l?l.city:'')}</td><td class="mono">${c.duration!=null?c.duration.toFixed(1)+'s':''}</td>
+    <td>${esc(HL[c.hangup]||c.hangup||'')}</td><td class="mono nowrap">${esc(callDateOf(c))}</td></tr>`;
+  });
+  h+='</tbody></table>';
+ }else h+='<div class="empty-state">No short calls found</div>';
+ el.innerHTML=h;
+}
+
+// Duration by scenario
+function renderDurByScenario(bkts){
+ const data=buildDurByScenario(bkts);const el=$('#p-durscn');
+ if(!data.length){el.innerHTML='<div class="empty-state">No data</div>';return}
+ const items=data.slice(0,12).map(d=>({label:d.scenario,val:d.avg,valStr:fdur(d.avg)+' ('+d.count+' calls)'}));
+ renderHBars(el,items,'var(--in)');
+}
+
+// Duration vs milestone
+function renderDurVsMilestone(bkts){
+ const data=buildDurVsMilestone(bkts);const el=$('#p-durout');
+ if(!data.length){el.innerHTML='<div class="empty-state">No data</div>';return}
+ const items=data.map(d=>({label:d.label,val:d.avg,valStr:fdur(d.avg)+' ('+d.count+')'}));
+ renderHBars(el,items,'var(--ac)');
+ el.innerHTML+='<div style="margin-top:12px;font-size:11px;color:var(--tm);font-style:italic">↑ Higher milestones tend to have longer avg call durations, confirming that deeper conversations drive pipeline progression.</div>';
+}
+
+// Pipeline velocity table
+function renderVelocity(bkts){
+ const data=buildVelocity(bkts);const el=$('#p-velocity');
+ if(!data.length){el.innerHTML='<div class="empty-state">Not enough multi-call leads in range</div>';return}
+ let h='<table class="dtable"><thead><tr><th>From</th><th>→ To</th><th class="num">Avg calls</th><th class="num">Avg days</th><th class="num">Leads</th></tr></thead><tbody>';
+ data.forEach(d=>{h+=`<tr><td>${esc(d.from)}</td><td>${esc(d.to)}</td><td class="mono num">${d.avgCalls}</td><td class="mono num">${d.avgDays}</td><td class="mono num">${d.count}</td></tr>`});
+ h+='</tbody></table>';
+ el.innerHTML=h;
+}
+
+// Stalled leads table
+function renderStalled(bkts){
+ const data=buildStalled(bkts);const el=$('#p-stalled');
+ if(!data.length){el.innerHTML='<div class="empty-state">No leads stalled for 3+ calls at same milestone</div>';return}
+ let h=`<div style="margin-bottom:10px;font-size:12px;color:var(--tm)">${data.length} leads stuck at the same milestone for 3+ consecutive calls</div>`;
+ h+='<table class="dtable"><thead><tr><th>Lead</th><th>City</th><th>Stuck at</th><th class="num">Stuck calls</th><th class="num">Total calls</th><th>Last call</th></tr></thead><tbody>';
+ data.slice(0,50).forEach(d=>{
+  h+=`<tr><td><a class="lead-link" onclick="window.open('index.html#${esc(d.id)}','_blank')">${esc(d.id)}</a></td>
+   <td>${esc(d.city||'')}</td><td><span class="badge ${MB[d.milestone]||'b-ne'}">${esc(d.mlabel)}</span></td>
+   <td class="mono num">${d.stuck}</td><td class="mono num">${d.total}</td><td class="mono nowrap">${esc(d.lastDate)}</td></tr>`;
+ });
+ h+='</tbody></table>';
+ el.innerHTML=h;
+}
+
+// Regressions table
+function renderRegressions(bkts){
+ const data=buildRegressions(bkts);const el=$('#p-regress');
+ if(!data.length){el.innerHTML='<div class="empty-state">No milestone regressions detected — great!</div>';return}
+ let h=`<div style="margin-bottom:10px;font-size:12px;color:var(--tm)">${data.length} regression event${data.length===1?'':'s'} where a lead moved backward in the pipeline</div>`;
+ h+='<table class="dtable"><thead><tr><th>Lead</th><th>City</th><th>Peak milestone</th><th>Regressed to</th><th class="num">Call #</th><th>Date</th></tr></thead><tbody>';
+ data.slice(0,50).forEach(d=>{
+  h+=`<tr><td><a class="lead-link" onclick="window.open('index.html#${esc(d.id)}','_blank')">${esc(d.id)}</a></td>
+   <td>${esc(d.city||'')}</td><td><span class="badge b-ok">${esc(d.fl)}</span></td>
+   <td><span class="badge b-dn">${esc(d.tl)}</span></td>
+   <td class="mono num">${d.call}</td><td class="mono nowrap">${esc(d.date)}</td></tr>`;
+ });
+ h+='</tbody></table>';
+ el.innerHTML=h;
+}
+
+// Visit outcomes
+function renderVisitOutcomes(bkts){
+ const d=buildVisitOutcomes(bkts);const el=$('#p-visit');
+ if(!d.total){el.innerHTML='<div class="empty-state">No visit data in range</div>';return}
+ const pct=v=>d.total?(v/d.total*100).toFixed(1)+'%':'0%';
+ el.innerHTML=`<div class="visit-funnel">
+  <div class="vf-item vf-in"><div class="vf-val">${d.total}</div><div class="vf-lbl">Total with visit intent</div></div>
+  <div class="vf-item vf-in"><div class="vf-val">${d.scheduled}</div><div class="vf-lbl">Scheduled only</div><div class="vf-pct">${pct(d.scheduled)}</div></div>
+  <div class="vf-item vf-ok"><div class="vf-val">${d.confirmed}</div><div class="vf-lbl">Confirmed / visited</div><div class="vf-pct">${pct(d.confirmed)}</div></div>
+  <div class="vf-item vf-wn"><div class="vf-val">${d.rescheduled}</div><div class="vf-lbl">Rescheduled</div><div class="vf-pct">${pct(d.rescheduled)}</div></div>
+  <div class="vf-item vf-dn"><div class="vf-val">${d.cancelled}</div><div class="vf-lbl">Cancelled</div><div class="vf-pct">${pct(d.cancelled)}</div></div>
+ </div>`;
+}
+
+// Call gap analysis
+function renderGapAnalysis(bkts){
+ const data=buildGapAnalysis(bkts);const el=$('#p-gap');
+ if(!data.length){el.innerHTML='<div class="empty-state">Need multi-call leads</div>';return}
+ let h='<table class="dtable"><thead><tr><th>Gap</th><th class="num">Calls</th><th class="num">Pickup %</th><th class="num">Conv %</th></tr></thead><tbody>';
+ data.forEach(d=>{
+  const pkColor=d.pickupRate>=50?'var(--ok)':d.pickupRate>=30?'var(--wn)':'var(--dn)';
+  h+=`<tr><td class="mono">${esc(d.label)}</td><td class="mono num">${d.total}</td>
+   <td class="mono num" style="color:${pkColor}">${d.pickupRate.toFixed(1)}%</td>
+   <td class="mono num">${d.convRate.toFixed(1)}%</td></tr>`;
+ });
+ h+='</tbody></table>';
+ const best=data.reduce((a,b)=>b.pickupRate>a.pickupRate?b:a,data[0]);
+ h+=`<div style="margin-top:10px;font-size:11px;color:var(--tm)">💡 Best pickup rate: <b>${esc(best.label)}</b> gap (${best.pickupRate.toFixed(1)}% pickup)</div>`;
+ el.innerHTML=h;
+}
+
+// Pref deepening
+function renderPrefDeepening(bkts){
+ const data=buildPrefDeepening(bkts);const el=$('#p-pref');
+ if(!data.length){el.innerHTML='<div class="empty-state">No connected calls with pref data</div>';return}
+ let h='<div style="margin-bottom:10px;font-size:12px;color:var(--tm)">Average preference fields filled per connected call, by attempt number (out of 9 fields)</div>';
+ const maxV=Math.max(...data.map(d=>+d.avg),1);
+ h+='<div class="hbar-chart">';
+ data.forEach(d=>{
+  const pct=(+d.avg/9*100).toFixed(0);
+  h+=`<div class="hbar-row"><div class="hbar-lbl">Call #${esc(d.attempt)}</div>
+   <div class="hbar-track"><div class="hbar-fill" style="width:${pct}%;background:var(--ok)"></div></div>
+   <div class="hbar-val">${d.avg} fields (${d.count} calls)</div></div>`;
+ });
+ h+='</div>';
+ if(data.length>=2){
+  const first=+data[0].avg,last=+data[data.length-1].avg;
+  const dir=last>first?'↑ increasing':'↓ decreasing';
+  h+=`<div style="margin-top:10px;font-size:11px;color:var(--tm)">💡 Preference depth is <b>${dir}</b> over calls (${first} → ${last} avg fields)</div>`;
+ }
+ el.innerHTML=h;
+}
+
+// Budget shift
+function renderBudgetShift(bkts){
+ const data=buildBudgetShift(bkts);const el=$('#p-budget');
+ if(!data.length){el.innerHTML='<div class="empty-state">Need leads with budget data across multiple calls</div>';return}
+ const up=data.filter(d=>d.shift>0).length,dn=data.filter(d=>d.shift<0).length,flat=data.filter(d=>d.shift===0).length;
+ let h=`<div style="margin-bottom:12px;font-size:12px;color:var(--tm)">${data.length} leads with budget changes: <span class="arr-up">${up} budget up ↑</span> · <span class="arr-dn">${dn} budget down ↓</span> · ${flat} unchanged</div>`;
+ h+='<table class="dtable"><thead><tr><th>Lead</th><th>City</th><th class="num">First midpoint</th><th class="num">Last midpoint</th><th class="num">Change</th></tr></thead><tbody>';
+ data.slice(0,30).forEach(d=>{
+  const cls=d.shift>0?'arr-up':d.shift<0?'arr-dn':'arr-flat';
+  h+=`<tr><td><a class="lead-link" onclick="window.open('index.html#${esc(d.id)}','_blank')">${esc(d.id)}</a></td>
+   <td>${esc(d.city||'')}</td><td class="mono num">${fp(d.first)}</td><td class="mono num">${fp(d.last)}</td>
+   <td class="mono num ${cls}">${d.shift>0?'+':''}${d.pct.toFixed(1)}%</td></tr>`;
+ });
+ h+='</tbody></table>';
+ el.innerHTML=h;
+}
+
+// Scenario distribution (donut)
+function renderScenarioDist(bkts){
+ const data=buildScenarioDist(bkts);const el=$('#p-scenario');
+ if(!data.length){el.innerHTML='<div class="empty-state">No data</div>';return}
+ const total=data.reduce((s,d)=>s+d.count,0);
+ // SVG donut
+ const size=180,cx=size/2,cy=size/2,r=65,sw=30;
+ let svgH=`<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" class="donut-svg">`;
+ let angle=0;
+ data.slice(0,10).forEach((d,i)=>{
+  const sliceAngle=(d.count/total)*360;
+  const startA=angle,endA=angle+sliceAngle;
+  // Arc path
+  const s1=polarXY(cx,cy,r,startA),e1=polarXY(cx,cy,r,endA);
+  const large=sliceAngle>180?1:0;
+  svgH+=`<path d="M ${s1.x} ${s1.y} A ${r} ${r} 0 ${large} 1 ${e1.x} ${e1.y}" fill="none" stroke="${COLORS[i%COLORS.length]}" stroke-width="${sw}" opacity="0.85"/>`;
+  angle=endA;
+ });
+ svgH+='</svg>';
+ // Legend
+ let lgH='<div class="donut-legend">';
+ data.slice(0,10).forEach((d,i)=>{
+  lgH+=`<div class="dl-row"><span class="dl-sw" style="background:${COLORS[i%COLORS.length]}"></span><span class="dl-label">${esc(d.scenario)}</span><span class="dl-val">${d.count} (${d.pct.toFixed(1)}%)</span></div>`;
+ });
+ if(data.length>10)lgH+=`<div class="dl-row"><span class="dl-sw" style="background:var(--tf)"></span><span class="dl-label">Others</span><span class="dl-val">${data.slice(10).reduce((s,d)=>s+d.count,0)}</span></div>`;
+ lgH+='</div>';
+ el.innerHTML=`<div class="donut-wrap">${svgH}${lgH}</div>`;
+}
+function polarXY(cx,cy,r,deg){const rad=(deg-90)*Math.PI/180;return{x:cx+r*Math.cos(rad),y:cy+r*Math.sin(rad)}}
+
+// ========== SVG CHART HELPERS (for daily trend charts) ==========
 
 function renderBarLineChart(svgId,buckets,opts){
- const svg=$('#'+svgId);
- if(!buckets.length){svg.innerHTML=`<text x="50%" y="50%" text-anchor="middle" class="axis-label">No data in selected range</text>`;return}
- const w=svg.clientWidth||600;const h=svg.clientHeight||260;
- const M={t:12,r:14,b:32,l:38};
- const iw=w-M.l-M.r;const ih=h-M.t-M.b;
+ const svg=$('#'+svgId);if(!svg)return;
+ if(!buckets.length){svg.innerHTML='<text x="50%" y="50%" text-anchor="middle" class="axis-label">No data</text>';return}
+ const w=svg.clientWidth||600,h=svg.clientHeight||260;
+ const M={t:12,r:14,b:32,l:42},iw=w-M.l-M.r,ih=h-M.t-M.b;
  const series=opts.series(buckets);
- // compute max y
  let maxY=0;series.forEach(s=>s.values.forEach(v=>{if(v>maxY)maxY=v}));
- if(maxY===0)maxY=1;
- const pad=Math.ceil(maxY*.1);maxY=Math.ceil((maxY+pad)/5)*5||maxY;
+ if(!maxY)maxY=1;maxY=Math.ceil(maxY*1.1/5)*5||maxY+1;
  const xBand=iw/buckets.length;
  const xpos=i=>M.l+xBand*i+xBand/2;
  const ypos=v=>M.t+ih-(v/maxY)*ih;
  let out='';
- // gridlines
- for(let i=0;i<=4;i++){const v=maxY*i/4;const y=ypos(v);
-  out+=`<line class="grid-line" x1="${M.l}" y1="${y}" x2="${w-M.r}" y2="${y}"/>`;
-  out+=`<text class="axis-label" x="${M.l-6}" y="${y+3}" text-anchor="end">${Math.round(v).toLocaleString()}${opts.yUnit||''}</text>`;
- }
- // x labels (only some)
- const step=Math.max(1,Math.ceil(buckets.length/8));
- buckets.forEach((b,i)=>{
-  if(i%step===0||i===buckets.length-1){
-   const x=xpos(i);const d=pd(b.date+' 00:00:00')||new Date(b.date);
-   const lbl=d?d.toLocaleDateString('en-IN',{day:'2-digit',month:'short'}):b.date;
-   out+=`<text class="axis-label" x="${x}" y="${h-M.b+14}" text-anchor="middle">${lbl}</text>`;
-  }
- });
- // axis lines
- out+=`<line class="axis-line" x1="${M.l}" y1="${h-M.b}" x2="${w-M.r}" y2="${h-M.b}"/>`;
- // series
- const barW=Math.max(1,xBand*.7);
- series.forEach((s,si)=>{
-  if(s.type==='bar'){
-   s.values.forEach((v,i)=>{
-    const x=xpos(i)-barW/2+(si*barW/series.filter(x=>x.type==='bar').length);
-    const bw=barW/series.filter(x=>x.type==='bar').length;
-    const y=ypos(v);
-    out+=`<rect class="bar" x="${x}" y="${y}" width="${bw-1}" height="${h-M.b-y}" fill="${s.color}" data-tip="${esc(buckets[i].date)}: ${v}${opts.yUnit||''} (${s.label})"/>`;
-   });
-  }else if(s.type==='line'){
-   const path=s.values.map((v,i)=>`${i===0?'M':'L'}${xpos(i)},${ypos(v)}`).join(' ');
-   out+=`<path class="line" d="${path}" stroke="${s.color}"/>`;
-   s.values.forEach((v,i)=>{
-    out+=`<circle class="dot" cx="${xpos(i)}" cy="${ypos(v)}" r="3" fill="${s.color}" data-tip="${esc(buckets[i].date)}: ${v}${opts.yUnit||''} (${s.label})"/>`;
-   });
-  }
- });
- svg.innerHTML=out;
- wireTooltips(svg);
-}
+ for(let i=0;i<=4;i++){const v=maxY*i/4,y=ypos(v);
+  out+=`<line class="grid-line" x1="${M.l
 
-function renderStackedArea(svgId,buckets,opts){
- const svg=$('#'+svgId);
- if(!buckets.length){svg.innerHTML=`<text x="50%" y="50%" text-anchor="middle" class="axis-label">No data in selected range</text>`;return}
- const w=svg.clientWidth||600;const h=svg.clientHeight||300;
- const M={t:12,r:14,b:32,l:38};
- const iw=w-M.l-M.r;const ih=h-M.t-M.b;
- const keys=opts.keys;const colors=opts.colors;
- // build stacked values
- const stacks=buckets.map(b=>{
-  const o={};keys.forEach(k=>o[k]=opts.getValue(b,k));return o;
- });
- const totals=stacks.map(s=>keys.reduce((a,k)=>a+s[k],0));
- let maxY=Math.max(1,...totals);
- maxY=Math.ceil(maxY/5)*5||maxY;
- const xBand=iw/buckets.length;
- const xpos=i=>M.l+xBand*i+xBand/2;
- const ypos=v=>M.t+ih-(v/maxY)*ih;
- let out='';
- for(let i=0;i<=4;i++){const v=maxY*i/4;const y=ypos(v);
-  out+=`<line class="grid-line" x1="${M.l}" y1="${y}" x2="${w-M.r}" y2="${y}"/>`;
-  out+=`<text class="axis-label" x="${M.l-6}" y="${y+3}" text-anchor="end">${Math.round(v).toLocaleString()}</text>`;
- }
- const step=Math.max(1,Math.ceil(buckets.length/8));
- buckets.forEach((b,i)=>{
-  if(i%step===0||i===buckets.length-1){
-   const x=xpos(i);const d=pd(b.date+' 00:00:00')||new Date(b.date);
-   const lbl=d?d.toLocaleDateString('en-IN',{day:'2-digit',month:'short'}):b.date;
-   out+=`<text class="axis-label" x="${x}" y="${h-M.b+14}" text-anchor="middle">${lbl}</text>`;
-  }
- });
- out+=`<line class="axis-line" x1="${M.l}" y1="${h-M.b}" x2="${w-M.r}" y2="${h-M.b}"/>`;
- // draw stacked areas (bottom to top)
- let accum=buckets.map(()=>0);
- keys.forEach((k,ki)=>{
-  const top=stacks.map((s,i)=>accum[i]+s[k]);
-  const btm=accum.slice();
-  let d=`M${xpos(0)},${ypos(top[0])}`;
-  for(let i=1;i<buckets.length;i++)d+=` L${xpos(i)},${ypos(top[i])}`;
-  for(let i=buckets.length-1;i>=0;i--)d+=` L${xpos(i)},${ypos(btm[i])}`;
-  d+=' Z';
-  out+=`<path d="${d}" fill="${colors[ki]}" opacity=".7"/>`;
-  accum=top;
- });
- // hover hit zones
- buckets.forEach((b,i)=>{
-  const parts=keys.map(k=>`${opts.labels[k]||k}: ${stacks[i][k]}`).filter((_,idx)=>stacks[i][keys[idx]]>0);
-  const tip=`${b.date} — ${parts.join(', ')||'no data'}`;
-  out+=`<rect x="${M.l+xBand*i}" y="${M.t}" width="${xBand}" height="${ih}" fill="transparent" data-tip="${esc(tip)}"/>`;
- });
- svg.innerHTML=out;
- wireTooltips(svg);
-}
-
-function wireTooltips(svg){
- const tt=$('#tt');
- svg.querySelectorAll('[data-tip]').forEach(el=>{
-  el.addEventListener('mousemove',e=>{
-   tt.textContent=el.dataset.tip;
-   tt.style.left=(e.pageX+10)+'px';
-   tt.style.top=(e.pageY-28)+'px';
-   tt.classList.add('vis');
-  });
-  el.addEventListener('mouseleave',()=>tt.classList.remove('vis'));
- });
-}
-
-// ---- Chart builders ----
-function renderVolume(buckets){
- renderBarLineChart('ch-volume',buckets,{
-  series:bs=>[
-   {type:'bar',label:'Attempted',values:bs.map(b=>b.calls.length),color:getCSSVar('--bds')},
-   {type:'bar',label:'Connected',values:bs.map(b=>b.calls.filter(c=>c.connected).length),color:getCSSVar('--ok')},
-  ]
- });
-}
-
-function renderConv(buckets){
- renderBarLineChart('ch-conv',buckets,{
-  yUnit:'%',
-  series:bs=>[
-   {type:'line',label:'Conv rate',values:bs.map(b=>{const conn=b.calls.filter(c=>c.connected).length;const td=b.calls.filter(c=>c.conversion).length;return conn?+(td/conn*100).toFixed(1):0}),color:getCSSVar('--ac')},
-  ]
- });
-}
-
-function renderDur(buckets){
- renderBarLineChart('ch-dur',buckets,{
-  yUnit:'s',
-  series:bs=>[
-   {type:'line',label:'Avg duration',values:bs.map(b=>{const c=b.calls.filter(c=>c.connected&&c.duration);return c.length?Math.round(c.reduce((s,c)=>s+c.duration,0)/c.length):0}),color:getCSSVar('--in')},
-  ]
- });
-}
-
-function renderMilestone(buckets){
- const keys=['fresh_lead','minimal_engagement','preference_collected','car_pitched','test_drive_scheduled'];
- const colors=[getCSSVar('--bds'),getCSSVar('--wn'),getCSSVar('--in'),getCSSVar('--or'),getCSSVar('--ok')];
- const labels={fresh_lead:'Fresh',minimal_engagement:'Minimal',preference_collected:'Prefs',car_pitched:'Pitched',test_drive_scheduled:'TD Sched'};
- renderStackedArea('ch-ms',buckets,{keys,colors,labels,getValue:(b,k)=>b.calls.filter(c=>c.milestone===k).length});
- $('#ch-ms-lg').innerHTML=keys.map((k,i)=>`<div class="lg-item"><span class="lg-sw" style="background:${colors[i]}"></span>${labels[k]}</div>`).join('');
-}
-
-// ---- MASTER RENDER ----
-function render(){
- const buckets=getFiltered();
- renderKPIs(buckets);
- renderFunnel('f-stage',buildStageFunnel(buckets));
- renderFunnel('f-call',buildCallFunnel(buckets));
- renderFunnel('f-intent',buildIntentFunnel(buckets));
- // charts need next tick for width to be set
- requestAnimationFrame(()=>{
-  renderVolume(buckets);
-  renderConv(buckets);
-  renderMilestone(buckets);
-  renderDur(buckets);
- });
-}
-
-// re-render charts on resize & theme change
-let rsz;window.addEventListener('resize',()=>{clearTimeout(rsz);rsz=setTimeout(render,150)});
-new MutationObserver(()=>render()).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
-
-setPreset('all');
 """
 
 def build_analytics(shared_css, shared_js, data_json):
@@ -1166,10 +1510,35 @@ CALLS_CSS = r"""
 .empty-page{text-align:center;padding:60px 20px;color:var(--tf);font-style:italic;font-family:'Instrument Serif',serif;font-size:20px}
 
 .day-summary{display:flex;gap:12px;padding:10px 18px;background:var(--s);border-bottom:1px solid var(--bd);font-size:11px;color:var(--tm);flex-wrap:wrap}
+/* ---- Collapsible day cards ---- */
+.day-head{cursor:pointer;user-select:none}
+.day-chevron{font-size:12px;color:var(--tf);transition:transform .2s;margin-left:4px;display:inline-block}
+.day-card.collapsed .day-chevron{transform:rotate(-90deg)}
+.day-card.collapsed .split{display:none}
+.day-card.collapsed .day-head{border-bottom:none}
+
+/* ---- Checkboxes & Download ---- */
+.day-check{width:16px;height:16px;accent-color:var(--ac);cursor:pointer;flex-shrink:0}
+.day-check:hover{transform:scale(1.15)}
+/* stop checkbox click from toggling collapse */
+.day-head label{display:flex;align-items:center;cursor:pointer}
+
+.dl-bar{display:flex;gap:10px;align-items:center;padding:12px 16px;background:var(--s);border:1px solid var(--bd);border-radius:6px;margin-bottom:16px;flex-wrap:wrap}
+.dl-bar .dl-info{font-size:12px;color:var(--tm);margin-left:8px;font-family:'IBM Plex Mono',monospace}
+.dl-bar button{padding:6px 14px;border:1px solid var(--ac);background:var(--ac);color:#fff;border-radius:4px;cursor:pointer;font-size:12px;font-family:inherit;font-weight:500;transition:opacity .15s}
+.dl-bar button:hover{opacity:.85}
+.dl-bar button:disabled{opacity:.4;cursor:not-allowed}
+.dl-bar .sel-all-wrap{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--tm)}
+.dl-bar .sel-all-wrap input{accent-color:var(--ac)}
+
+.dl-fmt{padding:5px 9px;border:1px solid var(--bds);border-radius:4px;font-family:inherit;font-size:12px;background:var(--bg);color:var(--tx);outline:none}
+
+/* Expand/Collapse all buttons */
+.exp-btn{padding:5px 11px;border:1px solid var(--bds);background:transparent;color:var(--tm);border-radius:4px;cursor:pointer;font-size:11px;font-family:inherit}
+.exp-btn:hover{border-color:var(--ac);color:var(--ac)}
 
 
 """
-
 CALLS_BODY = '''<div class="wrap">
 <div class="page-title">Calls by Date</div>
 <div class="page-sub">Every call in a date range, split by whether the lead was new to us that day or a followup from before.</div>
@@ -1186,11 +1555,28 @@ CALLS_BODY = '''<div class="wrap">
  </div>
 </div>
 
+<div class="dl-bar">
+ <div class="sel-all-wrap">
+  <input type="checkbox" id="selAll" checked>
+  <label for="selAll">Select all dates</label>
+ </div>
+ <span class="dl-info" id="dlInfo">0 calls selected</span>
+ <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+  <button class="exp-btn" id="expAll">Expand all</button>
+  <button class="exp-btn" id="colAll">Collapse all</button>
+  <select class="dl-fmt" id="dlFmt">
+   <option value="csv">CSV</option>
+   <option value="json">JSON</option>
+  </select>
+  <button id="dlBtn">⬇ Download selected</button>
+ </div>
+</div>
+
 <div id="days"></div>
 </div>'''
 
 CALLS_JS = r"""
-const cst={from:null,to:null};
+const cst={from:null,to:null,selectedDates:new Set()};
 const cBuckets=buildDailyBuckets(D);
 const cDates=cBuckets.map(b=>b.date);
 const cMin=cDates[0]||fdate(new Date());
@@ -1231,7 +1617,7 @@ function callRow(c){
  const hl=HL[c.hangup]||c.hangup||'';
  const ms=c.milestone?`<span class="badge ${MB[c.milestone]||'b-ne'}">${esc(ML[c.milestone]||c.milestone)}</span>`:'';
  const disp=c.dispose?esc(tr(c.dispose.replace(/_/g,' '),60)):'';
- return `<div class="call-row" onclick="window.open('index.html#${esc(c.leadId)}', '_blank')">
+ return `<div class="call-row" onclick="window.open('index.html#${esc(c.leadId)}','_blank')">
   <span class="cr-time">${timeStr}</span>
   <a class="cr-lead">${esc(c.leadId)}</a>
   ${c.city?`<span class="cr-city">${esc(c.city)}</span>`:''}
@@ -1247,13 +1633,117 @@ function callRow(c){
  </div>`;
 }
 
+// ---- COLLAPSE / EXPAND ----
+function toggleDay(date){
+ const card=document.querySelector(`.day-card[data-date="${date}"]`);
+ if(card)card.classList.toggle('collapsed');
+}
+
+$('#expAll').onclick=()=>document.querySelectorAll('.day-card').forEach(c=>c.classList.remove('collapsed'));
+$('#colAll').onclick=()=>document.querySelectorAll('.day-card').forEach(c=>c.classList.add('collapsed'));
+
+// ---- CHECKBOX SELECTION ----
+function updateDlInfo(){
+ const checked=document.querySelectorAll('.day-check:checked');
+ cst.selectedDates=new Set();
+ checked.forEach(cb=>cst.selectedDates.add(cb.dataset.date));
+ const totalCalls=getSelectedCalls().length;
+ $('#dlInfo').textContent=`${totalCalls} call${totalCalls===1?'':'s'} across ${cst.selectedDates.size} day${cst.selectedDates.size===1?'':'s'}`;
+ $('#dlBtn').disabled=cst.selectedDates.size===0;
+ // sync "select all"
+ const allBoxes=document.querySelectorAll('.day-check');
+ $('#selAll').checked=allBoxes.length>0&&checked.length===allBoxes.length;
+ $('#selAll').indeterminate=checked.length>0&&checked.length<allBoxes.length;
+}
+
+$('#selAll').onchange=e=>{
+ document.querySelectorAll('.day-check').forEach(cb=>{cb.checked=e.target.checked});
+ updateDlInfo();
+};
+
+function getSelectedCalls(){
+ return cBuckets
+  .filter(b=>cst.selectedDates.has(b.date))
+  .flatMap(b=>b.calls);
+}
+
+// ---- DOWNLOAD ----
+$('#dlBtn').onclick=()=>{
+ const calls=getSelectedCalls();
+ if(!calls.length)return;
+ const fmt=$('#dlFmt').value;
+ if(fmt==='json')downloadJSON(calls);
+ else downloadCSV(calls);
+};
+
+function downloadCSV(calls){
+ const cols=['Date','Time','Lead ID','City','Duration (s)','Connected','Hangup','Milestone','Disposition',
+             'New Lead','DND','Soft DND','Handoff','Conversion','Scenario','Capability'];
+ const rows=calls.map(c=>{
+  const t=pd(c.time);
+  return [
+   callDate(c),
+   t?t.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}):'',
+   c.leadId||'',
+   c.city||'',
+   c.duration!=null?Math.round(c.duration):'',
+   c.connected?'Yes':'No',
+   c.hangup||'',
+   c.milestone||'',
+   (c.dispose||'').replace(/_/g,' '),
+   c.isNewLead?'New':'Followup',
+   c.mark_dnd?'Yes':'',
+   c.soft_dnd?'Yes':'',
+   c.handoff?'Yes':'',
+   c.conversion?'Yes':'',
+   c.scenario||'',
+   c.capability||''
+  ];
+ });
+ const csvContent=[cols,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+ triggerDownload(csvContent,'text/csv','calls_export.csv');
+}
+
+function downloadJSON(calls){
+ const data=calls.map(c=>({
+  date:callDate(c),
+  time:c.time||'',
+  leadId:c.leadId||'',
+  city:c.city||'',
+  duration:c.duration,
+  connected:c.connected,
+  hangup:c.hangup||'',
+  milestone:c.milestone||'',
+  disposition:(c.dispose||'').replace(/_/g,' '),
+  isNewLead:!!c.isNewLead,
+  dnd:!!c.mark_dnd,
+  softDnd:!!c.soft_dnd,
+  handoff:!!c.handoff,
+  conversion:!!c.conversion,
+  scenario:c.scenario||'',
+  capability:c.capability||''
+ }));
+ triggerDownload(JSON.stringify(data,null,2),'application/json','calls_export.json');
+}
+
+function triggerDownload(content,mime,filename){
+ const blob=new Blob([content],{type:mime+';charset=utf-8'});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement('a');
+ a.href=url;a.download=filename;
+ document.body.appendChild(a);a.click();
+ document.body.removeChild(a);
+ URL.revokeObjectURL(url);
+}
+
+// ---- MAIN RENDER ----
 function cRender(){
  const container=$('#days');
  const filtered=cBuckets.filter(b=>(!cst.from||b.date>=cst.from)&&(!cst.to||b.date<=cst.to));
- if(!filtered.length){container.innerHTML='<div class="empty-page">No calls in this date range</div>';return}
- // newest first
+ if(!filtered.length){container.innerHTML='<div class="empty-page">No calls in this date range</div>';updateDlInfo();return}
  const sorted=filtered.slice().sort((a,b)=>b.date.localeCompare(a.date));
- container.innerHTML=sorted.map(b=>{
+
+ container.innerHTML=sorted.map((b,idx)=>{
   const niceDate=(pd(b.date+' 00:00:00')||new Date(b.date)).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
   const wd=weekdayOf(b.date);
   const newCalls=b.calls.filter(c=>c.isNewLead).sort((a,b)=>callTime(a)-callTime(b));
@@ -1262,9 +1752,13 @@ function cRender(){
   const conv=b.calls.filter(c=>c.conversion).length;
   const dnd=b.calls.filter(c=>c.mark_dnd).length;
   const newLeads=b.newLeadIds.size;const folLeads=b.followupLeadIds.size;
+  // First card (most recent) expanded, rest collapsed
+  const collapsedCls=idx===0?'':'collapsed';
 
-  return `<div class="day-card">
+  return `<div class="day-card ${collapsedCls}" data-date="${esc(b.date)}">
    <div class="day-head">
+    <input type="checkbox" class="day-check" data-date="${esc(b.date)}" checked onclick="event.stopPropagation();updateDlInfo()">
+    <span class="day-chevron">▼</span>
     <div class="day-date">${esc(niceDate)}</div>
     <div class="day-weekday">${esc(wd)}</div>
     <div class="day-stats">
@@ -1296,10 +1790,24 @@ function cRender(){
    </div>
   </div>`;
  }).join('');
+
+ // Wire collapse toggles — click on day-head toggles, but not on checkbox
+ document.querySelectorAll('.day-head').forEach(h=>{
+  h.onclick=e=>{
+   if(e.target.classList.contains('day-check'))return; // don't toggle on checkbox click
+   const card=h.closest('.day-card');
+   card.classList.toggle('collapsed');
+  };
+ });
+
+ // Select all checked dates
+ cst.selectedDates=new Set(sorted.map(b=>b.date));
+ updateDlInfo();
 }
 
 cSetPreset('all');
 """
+
 
 def build_calls(shared_css, shared_js, data_json):
     nav = NAV_HTML.replace("__EXTRA_HEADER__", "")
