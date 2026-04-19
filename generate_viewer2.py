@@ -1166,10 +1166,35 @@ CALLS_CSS = r"""
 .empty-page{text-align:center;padding:60px 20px;color:var(--tf);font-style:italic;font-family:'Instrument Serif',serif;font-size:20px}
 
 .day-summary{display:flex;gap:12px;padding:10px 18px;background:var(--s);border-bottom:1px solid var(--bd);font-size:11px;color:var(--tm);flex-wrap:wrap}
+/* ---- Collapsible day cards ---- */
+.day-head{cursor:pointer;user-select:none}
+.day-chevron{font-size:12px;color:var(--tf);transition:transform .2s;margin-left:4px;display:inline-block}
+.day-card.collapsed .day-chevron{transform:rotate(-90deg)}
+.day-card.collapsed .split{display:none}
+.day-card.collapsed .day-head{border-bottom:none}
+
+/* ---- Checkboxes & Download ---- */
+.day-check{width:16px;height:16px;accent-color:var(--ac);cursor:pointer;flex-shrink:0}
+.day-check:hover{transform:scale(1.15)}
+/* stop checkbox click from toggling collapse */
+.day-head label{display:flex;align-items:center;cursor:pointer}
+
+.dl-bar{display:flex;gap:10px;align-items:center;padding:12px 16px;background:var(--s);border:1px solid var(--bd);border-radius:6px;margin-bottom:16px;flex-wrap:wrap}
+.dl-bar .dl-info{font-size:12px;color:var(--tm);margin-left:8px;font-family:'IBM Plex Mono',monospace}
+.dl-bar button{padding:6px 14px;border:1px solid var(--ac);background:var(--ac);color:#fff;border-radius:4px;cursor:pointer;font-size:12px;font-family:inherit;font-weight:500;transition:opacity .15s}
+.dl-bar button:hover{opacity:.85}
+.dl-bar button:disabled{opacity:.4;cursor:not-allowed}
+.dl-bar .sel-all-wrap{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--tm)}
+.dl-bar .sel-all-wrap input{accent-color:var(--ac)}
+
+.dl-fmt{padding:5px 9px;border:1px solid var(--bds);border-radius:4px;font-family:inherit;font-size:12px;background:var(--bg);color:var(--tx);outline:none}
+
+/* Expand/Collapse all buttons */
+.exp-btn{padding:5px 11px;border:1px solid var(--bds);background:transparent;color:var(--tm);border-radius:4px;cursor:pointer;font-size:11px;font-family:inherit}
+.exp-btn:hover{border-color:var(--ac);color:var(--ac)}
 
 
 """
-
 CALLS_BODY = '''<div class="wrap">
 <div class="page-title">Calls by Date</div>
 <div class="page-sub">Every call in a date range, split by whether the lead was new to us that day or a followup from before.</div>
@@ -1186,11 +1211,28 @@ CALLS_BODY = '''<div class="wrap">
  </div>
 </div>
 
+<div class="dl-bar">
+ <div class="sel-all-wrap">
+  <input type="checkbox" id="selAll" checked>
+  <label for="selAll">Select all dates</label>
+ </div>
+ <span class="dl-info" id="dlInfo">0 calls selected</span>
+ <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+  <button class="exp-btn" id="expAll">Expand all</button>
+  <button class="exp-btn" id="colAll">Collapse all</button>
+  <select class="dl-fmt" id="dlFmt">
+   <option value="csv">CSV</option>
+   <option value="json">JSON</option>
+  </select>
+  <button id="dlBtn">⬇ Download selected</button>
+ </div>
+</div>
+
 <div id="days"></div>
 </div>'''
 
 CALLS_JS = r"""
-const cst={from:null,to:null};
+const cst={from:null,to:null,selectedDates:new Set()};
 const cBuckets=buildDailyBuckets(D);
 const cDates=cBuckets.map(b=>b.date);
 const cMin=cDates[0]||fdate(new Date());
@@ -1231,7 +1273,7 @@ function callRow(c){
  const hl=HL[c.hangup]||c.hangup||'';
  const ms=c.milestone?`<span class="badge ${MB[c.milestone]||'b-ne'}">${esc(ML[c.milestone]||c.milestone)}</span>`:'';
  const disp=c.dispose?esc(tr(c.dispose.replace(/_/g,' '),60)):'';
- return `<div class="call-row" onclick="window.open('index.html#${esc(c.leadId)}', '_blank')">
+ return `<div class="call-row" onclick="window.open('index.html#${esc(c.leadId)}','_blank')">
   <span class="cr-time">${timeStr}</span>
   <a class="cr-lead">${esc(c.leadId)}</a>
   ${c.city?`<span class="cr-city">${esc(c.city)}</span>`:''}
@@ -1247,13 +1289,117 @@ function callRow(c){
  </div>`;
 }
 
+// ---- COLLAPSE / EXPAND ----
+function toggleDay(date){
+ const card=document.querySelector(`.day-card[data-date="${date}"]`);
+ if(card)card.classList.toggle('collapsed');
+}
+
+$('#expAll').onclick=()=>document.querySelectorAll('.day-card').forEach(c=>c.classList.remove('collapsed'));
+$('#colAll').onclick=()=>document.querySelectorAll('.day-card').forEach(c=>c.classList.add('collapsed'));
+
+// ---- CHECKBOX SELECTION ----
+function updateDlInfo(){
+ const checked=document.querySelectorAll('.day-check:checked');
+ cst.selectedDates=new Set();
+ checked.forEach(cb=>cst.selectedDates.add(cb.dataset.date));
+ const totalCalls=getSelectedCalls().length;
+ $('#dlInfo').textContent=`${totalCalls} call${totalCalls===1?'':'s'} across ${cst.selectedDates.size} day${cst.selectedDates.size===1?'':'s'}`;
+ $('#dlBtn').disabled=cst.selectedDates.size===0;
+ // sync "select all"
+ const allBoxes=document.querySelectorAll('.day-check');
+ $('#selAll').checked=allBoxes.length>0&&checked.length===allBoxes.length;
+ $('#selAll').indeterminate=checked.length>0&&checked.length<allBoxes.length;
+}
+
+$('#selAll').onchange=e=>{
+ document.querySelectorAll('.day-check').forEach(cb=>{cb.checked=e.target.checked});
+ updateDlInfo();
+};
+
+function getSelectedCalls(){
+ return cBuckets
+  .filter(b=>cst.selectedDates.has(b.date))
+  .flatMap(b=>b.calls);
+}
+
+// ---- DOWNLOAD ----
+$('#dlBtn').onclick=()=>{
+ const calls=getSelectedCalls();
+ if(!calls.length)return;
+ const fmt=$('#dlFmt').value;
+ if(fmt==='json')downloadJSON(calls);
+ else downloadCSV(calls);
+};
+
+function downloadCSV(calls){
+ const cols=['Date','Time','Lead ID','City','Duration (s)','Connected','Hangup','Milestone','Disposition',
+             'New Lead','DND','Soft DND','Handoff','Conversion','Scenario','Capability'];
+ const rows=calls.map(c=>{
+  const t=pd(c.time);
+  return [
+   callDate(c),
+   t?t.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}):'',
+   c.leadId||'',
+   c.city||'',
+   c.duration!=null?Math.round(c.duration):'',
+   c.connected?'Yes':'No',
+   c.hangup||'',
+   c.milestone||'',
+   (c.dispose||'').replace(/_/g,' '),
+   c.isNewLead?'New':'Followup',
+   c.mark_dnd?'Yes':'',
+   c.soft_dnd?'Yes':'',
+   c.handoff?'Yes':'',
+   c.conversion?'Yes':'',
+   c.scenario||'',
+   c.capability||''
+  ];
+ });
+ const csvContent=[cols,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+ triggerDownload(csvContent,'text/csv','calls_export.csv');
+}
+
+function downloadJSON(calls){
+ const data=calls.map(c=>({
+  date:callDate(c),
+  time:c.time||'',
+  leadId:c.leadId||'',
+  city:c.city||'',
+  duration:c.duration,
+  connected:c.connected,
+  hangup:c.hangup||'',
+  milestone:c.milestone||'',
+  disposition:(c.dispose||'').replace(/_/g,' '),
+  isNewLead:!!c.isNewLead,
+  dnd:!!c.mark_dnd,
+  softDnd:!!c.soft_dnd,
+  handoff:!!c.handoff,
+  conversion:!!c.conversion,
+  scenario:c.scenario||'',
+  capability:c.capability||''
+ }));
+ triggerDownload(JSON.stringify(data,null,2),'application/json','calls_export.json');
+}
+
+function triggerDownload(content,mime,filename){
+ const blob=new Blob([content],{type:mime+';charset=utf-8'});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement('a');
+ a.href=url;a.download=filename;
+ document.body.appendChild(a);a.click();
+ document.body.removeChild(a);
+ URL.revokeObjectURL(url);
+}
+
+// ---- MAIN RENDER ----
 function cRender(){
  const container=$('#days');
  const filtered=cBuckets.filter(b=>(!cst.from||b.date>=cst.from)&&(!cst.to||b.date<=cst.to));
- if(!filtered.length){container.innerHTML='<div class="empty-page">No calls in this date range</div>';return}
- // newest first
+ if(!filtered.length){container.innerHTML='<div class="empty-page">No calls in this date range</div>';updateDlInfo();return}
  const sorted=filtered.slice().sort((a,b)=>b.date.localeCompare(a.date));
- container.innerHTML=sorted.map(b=>{
+
+ container.innerHTML=sorted.map((b,idx)=>{
   const niceDate=(pd(b.date+' 00:00:00')||new Date(b.date)).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
   const wd=weekdayOf(b.date);
   const newCalls=b.calls.filter(c=>c.isNewLead).sort((a,b)=>callTime(a)-callTime(b));
@@ -1262,9 +1408,13 @@ function cRender(){
   const conv=b.calls.filter(c=>c.conversion).length;
   const dnd=b.calls.filter(c=>c.mark_dnd).length;
   const newLeads=b.newLeadIds.size;const folLeads=b.followupLeadIds.size;
+  // First card (most recent) expanded, rest collapsed
+  const collapsedCls=idx===0?'':'collapsed';
 
-  return `<div class="day-card">
+  return `<div class="day-card ${collapsedCls}" data-date="${esc(b.date)}">
    <div class="day-head">
+    <input type="checkbox" class="day-check" data-date="${esc(b.date)}" checked onclick="event.stopPropagation();updateDlInfo()">
+    <span class="day-chevron">▼</span>
     <div class="day-date">${esc(niceDate)}</div>
     <div class="day-weekday">${esc(wd)}</div>
     <div class="day-stats">
@@ -1296,10 +1446,24 @@ function cRender(){
    </div>
   </div>`;
  }).join('');
+
+ // Wire collapse toggles — click on day-head toggles, but not on checkbox
+ document.querySelectorAll('.day-head').forEach(h=>{
+  h.onclick=e=>{
+   if(e.target.classList.contains('day-check'))return; // don't toggle on checkbox click
+   const card=h.closest('.day-card');
+   card.classList.toggle('collapsed');
+  };
+ });
+
+ // Select all checked dates
+ cst.selectedDates=new Set(sorted.map(b=>b.date));
+ updateDlInfo();
 }
 
 cSetPreset('all');
 """
+
 
 def build_calls(shared_css, shared_js, data_json):
     nav = NAV_HTML.replace("__EXTRA_HEADER__", "")
