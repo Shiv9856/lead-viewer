@@ -906,9 +906,7 @@ ANALYTICS_BODY = '''<div class="wrap">
 <div class="tooltip" id="tt"></div>
 </div>'''
 
-
 ANALYTICS_JS = r"""
-// ========== STATE ==========
 const ast={from:null,to:null,preset:'all'};
 const allBuckets=buildDailyBuckets(D);
 const allDates=allBuckets.map(b=>b.date);
@@ -917,7 +915,6 @@ const maxD=allDates[allDates.length-1]||fdate(new Date());
 $('#rFrom').min=minD;$('#rFrom').max=maxD;
 $('#rTo').min=minD;$('#rTo').max=maxD;
 
-// ========== DATE RANGE ==========
 function setPreset(p){
  ast.preset=p;
  document.querySelectorAll('.range-ctl button[data-preset]').forEach(b=>b.classList.toggle('active',b.dataset.preset===p));
@@ -930,7 +927,6 @@ $('#rFrom').onchange=e=>{ast.from=e.target.value||minD;ast.preset='';document.qu
 $('#rTo').onchange=e=>{ast.to=e.target.value||maxD;ast.preset='';document.querySelectorAll('.range-ctl button[data-preset]').forEach(b=>b.classList.remove('active'));render()};
 document.querySelectorAll('.range-ctl button[data-preset]').forEach(b=>b.onclick=()=>setPreset(b.dataset.preset));
 
-// ========== SCOPED TAB HANDLER ==========
 function wireTabs(){
  document.querySelectorAll('.card').forEach(card=>{
   card.querySelectorAll('.tabs .tab').forEach(t=>{
@@ -946,30 +942,22 @@ function wireTabs(){
 }
 wireTabs();
 
-// ========== HELPERS ==========
 function getFiltered(){return allBuckets.filter(b=>(!ast.from||b.date>=ast.from)&&(!ast.to||b.date<=ast.to))}
-function getCSSVar(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()}
 const COLORS=['#5c6bc0','#26a69a','#ef5350','#ffa726','#ab47bc','#8d6e63','#42a5f5','#66bb6a','#ec407a','#78909c'];
 function callDateOf(c){const t=pd(c.time);if(t)return fdate(t);return c.date||''}
 function leadOf(id){return D.find(l=>l.id===id)}
 
-// ========== DATA BUILDERS ==========
+// ===== DATA BUILDERS =====
 
-// Existing funnels
 function buildStageFunnel(bkts){
  const lids=new Set();bkts.forEach(b=>b.calls.forEach(c=>lids.add(c.leadId)));
- const leads=D.filter(l=>lids.has(l.id));
- const best={};
- leads.forEach(l=>{let b=0,bk='';
-  l.calls.forEach(c=>{const o=MO[c.milestone]||0;if(o>b){b=o;bk=c.milestone}});
-  best[l.id]={o:b,k:bk};
- });
+ const leads=D.filter(l=>lids.has(l.id));const best={};
+ leads.forEach(l=>{let b=0,bk='';l.calls.forEach(c=>{const o=MO[c.milestone]||0;if(o>b){b=o;bk=c.milestone}});best[l.id]={o:b,k:bk}});
  const cnt=ms=>Object.values(best).filter(x=>(MO[x.k]||0)>=(MO[ms]||0)).length;
  const conv=leads.filter(l=>l.calls.some(c=>c.conversion)).length;
  return [{label:'Fresh',val:cnt('fresh_lead')+Object.values(best).filter(x=>!x.k).length},
   {label:'Minimal',val:cnt('minimal_engagement')},{label:'Prefs collected',val:cnt('preference_collected')},
-  {label:'Car pitched',val:cnt('car_pitched')},{label:'TD scheduled',val:cnt('test_drive_scheduled')},
-  {label:'Converted',val:conv}];
+  {label:'Car pitched',val:cnt('car_pitched')},{label:'TD scheduled',val:cnt('test_drive_scheduled')},{label:'Converted',val:conv}];
 }
 function buildCallFunnel(bkts){
  const c=bkts.flatMap(b=>b.calls);
@@ -978,23 +966,16 @@ function buildCallFunnel(bkts){
   {label:'Pitched',val:c.filter(x=>x.car_pitched).length},{label:'Converted',val:c.filter(x=>x.conversion).length}];
 }
 function buildIntentFunnel(bkts){
- const lids=new Set();bkts.forEach(b=>b.calls.forEach(c=>lids.add(c.leadId)));
- const leads=D.filter(l=>lids.has(l.id));
- const rc=l=>l.calls.filter(c=>bkts.some(b=>b.calls.some(bc=>bc===c||bc.leadId===l.id&&b.date===callDateOf(c))));
- return [{label:'All leads',val:leads.length},
-  {label:'Interested',val:leads.filter(l=>l.calls.some(c=>c.interested_buying)).length},
+ const lids=new Set();bkts.forEach(b=>b.calls.forEach(c=>lids.add(c.leadId)));const leads=D.filter(l=>lids.has(l.id));
+ return [{label:'All leads',val:leads.length},{label:'Interested',val:leads.filter(l=>l.calls.some(c=>c.interested_buying)).length},
   {label:'TD booked',val:leads.filter(l=>l.calls.some(c=>c.interested_for_td)).length},
   {label:'Visit confirmed',val:leads.filter(l=>l.calls.some(c=>c.confirmed_visit)).length}];
 }
-
-// 1. Hangup breakdown
 function buildHangupBreakdown(bkts){
  const calls=bkts.flatMap(b=>b.calls);const cts={};
  calls.forEach(c=>{const h=c.hangup||'unknown';cts[h]=(cts[h]||0)+1});
  return Object.entries(cts).map(([k,v])=>({label:HL[k]||k,key:k,count:v,pct:calls.length?(v/calls.length*100):0})).sort((a,b)=>b.count-a.count);
 }
-
-// 2. Heatmap
 function buildHeatmap(bkts,cityFilter){
  const calls=bkts.flatMap(b=>b.calls);
  const filtered=cityFilter&&cityFilter!=='all'?calls.filter(c=>{const l=leadOf(c.leadId);return l&&l.city===cityFilter}):calls;
@@ -1002,102 +983,68 @@ function buildHeatmap(bkts,cityFilter){
  filtered.forEach(c=>{const t=pd(c.time);if(!t)return;grid[t.getDay()][t.getHours()].t++;if(c.connected)grid[t.getDay()][t.getHours()].c++});
  return grid;
 }
-
-// 3. Retry effectiveness
 function buildRetry(bkts){
  const dates=new Set(bkts.map(b=>b.date));const att={};
- D.forEach(l=>{l.calls.forEach((c,i)=>{
-  if(!dates.has(callDateOf(c)))return;
+ D.forEach(l=>{l.calls.forEach((c,i)=>{if(!dates.has(callDateOf(c)))return;
   const k=Math.min(i+1,6);const key=k>=6?'6+':String(k);
-  if(!att[key])att[key]={t:0,c:0};att[key].t++;if(c.connected)att[key].c++;
- })});
+  if(!att[key])att[key]={t:0,c:0};att[key].t++;if(c.connected)att[key].c++})});
  return Object.entries(att).map(([k,v])=>({attempt:k,total:v.t,connected:v.c,rate:v.t?(v.c/v.t*100):0}))
   .sort((a,b)=>{const na=a.attempt==='6+'?6:+a.attempt;const nb=b.attempt==='6+'?6:+b.attempt;return na-nb});
 }
-
-// 4. Short calls
 function buildShortCalls(bkts){
  const calls=bkts.flatMap(b=>b.calls);const conn=calls.filter(c=>c.connected);
  const short=conn.filter(c=>c.duration!=null&&c.duration<5);
  return {count:short.length,total:conn.length,pct:conn.length?(short.length/conn.length*100):0,calls:short.slice(0,25)};
 }
-
-// 5. Duration by scenario
 function buildDurByScenario(bkts){
  const calls=bkts.flatMap(b=>b.calls).filter(c=>c.connected&&c.duration);const g={};
  calls.forEach(c=>{const s=(c.scenario||'Unknown').replace(/^S\d+_/,'').replace(/_/g,' ');if(!g[s])g[s]=[];g[s].push(c.duration)});
- return Object.entries(g).map(([k,v])=>({scenario:k,avg:v.reduce((a,b)=>a+b,0)/v.length,count:v.length,max:Math.max(...v)})).sort((a,b)=>b.avg-a.avg);
+ return Object.entries(g).map(([k,v])=>({scenario:k,avg:v.reduce((a,b)=>a+b,0)/v.length,count:v.length})).sort((a,b)=>b.avg-a.avg);
 }
-
-// 6. Duration vs milestone
 function buildDurVsMilestone(bkts){
  const calls=bkts.flatMap(b=>b.calls).filter(c=>c.connected&&c.duration&&c.milestone);const g={};
  calls.forEach(c=>{if(!g[c.milestone])g[c.milestone]=[];g[c.milestone].push(c.duration)});
  return Object.entries(g).map(([k,v])=>({milestone:k,label:ML[k]||k,order:MO[k]||0,avg:v.reduce((a,b)=>a+b,0)/v.length,count:v.length})).sort((a,b)=>a.order-b.order);
 }
-
-// 7. Pipeline velocity
 function buildVelocity(bkts){
  const dates=new Set(bkts.map(b=>b.date));const trans=[];
- D.forEach(l=>{
-  const rc=l.calls.filter(c=>dates.has(callDateOf(c)));if(rc.length<2)return;
+ D.forEach(l=>{const rc=l.calls.filter(c=>dates.has(callDateOf(c)));if(rc.length<2)return;
   let lm=null,ld=null,cs=0;
   rc.forEach(c=>{cs++;const m=c.milestone;const d=callDateOf(c);
-   if(m&&m!==lm){if(lm&&(MO[m]||0)>(MO[lm]||0)){
-    const dd=ld&&d?Math.max(0,(new Date(d)-new Date(ld))/864e5):0;
-    trans.push({from:lm,to:m,calls:cs,days:dd});}lm=m;ld=d;cs=0;}});
- });
- const agg={};
- trans.forEach(t=>{const k=t.from+'→'+t.to;if(!agg[k])agg[k]={from:t.from,to:t.to,cl:[],dl:[]};agg[k].cl.push(t.calls);agg[k].dl.push(t.days)});
+   if(m&&m!==lm){if(lm&&(MO[m]||0)>(MO[lm]||0)){const dd=ld&&d?Math.max(0,(new Date(d)-new Date(ld))/864e5):0;
+    trans.push({from:lm,to:m,calls:cs,days:dd});}lm=m;ld=d;cs=0;}})});
+ const agg={};trans.forEach(t=>{const k=t.from+'→'+t.to;if(!agg[k])agg[k]={from:t.from,to:t.to,cl:[],dl:[]};agg[k].cl.push(t.calls);agg[k].dl.push(t.days)});
  return Object.values(agg).map(a=>({from:ML[a.from]||a.from,to:ML[a.to]||a.to,fk:a.from,tk:a.to,
-  avgCalls:(a.cl.reduce((s,v)=>s+v,0)/a.cl.length).toFixed(1),
-  avgDays:(a.dl.reduce((s,v)=>s+v,0)/a.dl.length).toFixed(1),
+  avgCalls:(a.cl.reduce((s,v)=>s+v,0)/a.cl.length).toFixed(1),avgDays:(a.dl.reduce((s,v)=>s+v,0)/a.dl.length).toFixed(1),
   count:a.cl.length})).sort((a,b)=>(MO[a.fk]||0)-(MO[b.fk]||0));
 }
-
-// 8. Stalled leads
 function buildStalled(bkts,min=3){
  const dates=new Set(bkts.map(b=>b.date));const res=[];
- D.forEach(l=>{
-  const rc=l.calls.filter(c=>dates.has(callDateOf(c)));if(rc.length<min)return;
+ D.forEach(l=>{const rc=l.calls.filter(c=>dates.has(callDateOf(c)));if(rc.length<min)return;
   const last=rc.slice(-min);const ms=last.map(c=>c.milestone).filter(Boolean);
-  if(ms.length>=min&&ms.every(m=>m===ms[0])){
-   const lc=rc[rc.length-1];
-   res.push({id:l.id,city:l.city,milestone:ms[0],mlabel:ML[ms[0]]||ms[0],stuck:ms.length,total:rc.length,lastDate:callDateOf(lc)});}
- });
+  if(ms.length>=min&&ms.every(m=>m===ms[0])){const lc=rc[rc.length-1];
+   res.push({id:l.id,city:l.city,milestone:ms[0],mlabel:ML[ms[0]]||ms[0],stuck:ms.length,total:rc.length,lastDate:callDateOf(lc)})}});
  return res.sort((a,b)=>b.stuck-a.stuck);
 }
-
-// 9. Regressions
 function buildRegressions(bkts){
  const dates=new Set(bkts.map(b=>b.date));const res=[];
- D.forEach(l=>{
-  const rc=l.calls.filter(c=>dates.has(callDateOf(c)));let peak=0,pm='';
+ D.forEach(l=>{const rc=l.calls.filter(c=>dates.has(callDateOf(c)));let peak=0,pm='';
   rc.forEach((c,i)=>{const o=MO[c.milestone]||0;
    if(o>peak){peak=o;pm=c.milestone}
-   else if(c.milestone&&o<peak&&o>0){res.push({id:l.id,city:l.city,from:pm,fl:ML[pm]||pm,to:c.milestone,tl:ML[c.milestone]||c.milestone,call:i+1,date:callDateOf(c)})}
-  });
- });
+   else if(c.milestone&&o<peak&&o>0){res.push({id:l.id,city:l.city,from:pm,fl:ML[pm]||pm,to:c.milestone,tl:ML[c.milestone]||c.milestone,call:i+1,date:callDateOf(c)})}})});
  return res;
 }
-
-// 10. Visit outcomes
 function buildVisitOutcomes(bkts){
  const dates=new Set(bkts.map(b=>b.date));const st={};
- D.forEach(l=>{
-  l.calls.filter(c=>dates.has(callDateOf(c))).forEach(c=>{
-   if(c.confirmed_visit)st[l.id]='confirmed';
-   else if(c.cancellation&&st[l.id]!=='confirmed')st[l.id]='cancelled';
-   else if(c.rescheduled&&!['confirmed','cancelled'].includes(st[l.id]))st[l.id]='rescheduled';
-   else if((c.milestone==='test_drive_scheduled'||c.selected_td_slot||c.interested_for_td)&&!st[l.id])st[l.id]='scheduled';
-  });
- });
+ D.forEach(l=>{l.calls.filter(c=>dates.has(callDateOf(c))).forEach(c=>{
+  if(c.confirmed_visit)st[l.id]='confirmed';
+  else if(c.cancellation&&st[l.id]!=='confirmed')st[l.id]='cancelled';
+  else if(c.rescheduled&&!['confirmed','cancelled'].includes(st[l.id]))st[l.id]='rescheduled';
+  else if((c.milestone==='test_drive_scheduled'||c.selected_td_slot||c.interested_for_td)&&!st[l.id])st[l.id]='scheduled'})});
  const v=Object.values(st);
  return {total:v.length,scheduled:v.filter(s=>s==='scheduled').length,confirmed:v.filter(s=>s==='confirmed').length,
   cancelled:v.filter(s=>s==='cancelled').length,rescheduled:v.filter(s=>s==='rescheduled').length};
 }
-
-// 11. Call gap analysis
 function buildGapAnalysis(bkts){
  const dates=new Set(bkts.map(b=>b.date));const gaps=[];
  D.forEach(l=>{const rc=l.calls.filter(c=>dates.has(callDateOf(c)));
@@ -1109,8 +1056,6 @@ function buildGapAnalysis(bkts){
   return {label:r.l,total:f.length,connected:cn.length,conv:f.filter(g=>g.conv).length,
    pickupRate:f.length?(cn.length/f.length*100):0,convRate:cn.length?(f.filter(g=>g.conv).length/cn.length*100):0}}).filter(r=>r.total>0);
 }
-
-// 12. Pref deepening
 function buildPrefDeepening(bkts){
  const dates=new Set(bkts.map(b=>b.date));
  const fields=['user_fuel','user_trans','user_body','user_make','user_model','user_color','user_seats','user_budget_min','user_budget_max'];
@@ -1121,8 +1066,6 @@ function buildPrefDeepening(bkts){
  return Object.entries(byAtt).map(([k,v])=>({attempt:k,avg:(v.reduce((a,b)=>a+b,0)/v.length).toFixed(1),count:v.length}))
   .sort((a,b)=>{const na=a.attempt==='8+'?8:+a.attempt;const nb=b.attempt==='8+'?8:+b.attempt;return na-nb});
 }
-
-// 13. Budget shift
 function buildBudgetShift(bkts){
  const dates=new Set(bkts.map(b=>b.date));const res=[];
  D.forEach(l=>{const rc=l.calls.filter(c=>dates.has(callDateOf(c)));
@@ -1133,30 +1076,25 @@ function buildBudgetShift(bkts){
   if(fmid&&lmid)res.push({id:l.id,city:l.city,first:fmid,last:lmid,shift:lmid-fmid,pct:fmid?((lmid-fmid)/fmid*100):0})});
  return res.sort((a,b)=>Math.abs(b.pct)-Math.abs(a.pct));
 }
-
-// 14. Scenario distribution
 function buildScenarioDist(bkts){
  const calls=bkts.flatMap(b=>b.calls);const cts={};
  calls.forEach(c=>{const s=(c.scenario||'Unknown').replace(/^S\d+_/,'').replace(/_/g,' ');cts[s]=(cts[s]||0)+1});
  const t=calls.length;
  return Object.entries(cts).map(([k,v])=>({scenario:k,count:v,pct:t?(v/t*100):0})).sort((a,b)=>b.count-a.count);
 }
+"""
+ANALYTICS_JS += r"""
+// ===== RENDERERS =====
 
-// ========== RENDERERS ==========
-
-// Funnel
 function renderFunnel(id,rows){
  const max=rows.length?rows[0].val:0;const c=$('#'+id);
  if(!max){c.innerHTML='<div class="empty-state">No data</div>';return}
- c.innerHTML='<div class="funnel">'+rows.map((r,i)=>{
-  const pct=max?(r.val/max*100).toFixed(0):0;
+ c.innerHTML='<div class="funnel">'+rows.map((r,i)=>{const pct=max?(r.val/max*100).toFixed(0):0;
   return `<div class="f-row"><div class="f-label">${esc(r.label)}</div>
    <div class="f-bar-wrap"><div class="f-bar s${(i%5)+1}" style="width:${pct}%"></div><div class="f-val">${r.val}</div></div>
-   <div class="f-pct">${(r.val/max*100).toFixed(1)}%</div></div>`;
- }).join('')+'</div>';
+   <div class="f-pct">${(r.val/max*100).toFixed(1)}%</div></div>`}).join('')+'</div>';
 }
 
-// KPIs
 function renderKPIs(bkts){
  const calls=bkts.flatMap(b=>b.calls);const lids=new Set();calls.forEach(c=>lids.add(c.leadId));
  const t=calls.length,cn=calls.filter(c=>c.connected).length,cnP=t?(cn/t*100).toFixed(1):0;
@@ -1174,277 +1112,276 @@ function renderKPIs(bkts){
   {k:'Cars pitched',v:pit,s:t?(pit/t*100).toFixed(0)+'% of calls':''},
   {k:'TD interest',v:td,s:cn?(td/cn*100).toFixed(0)+'% of connected':''},
   {k:'DND / Handoff',v:dnd+ho,s:dnd+' DND · '+ho+' handoff'},
-  {k:'Short (<5s)',v:sc,s:cn?(sc/cn*100).toFixed(1)+'% of connected':''},
- ];
+  {k:'Short (<5s)',v:sc,s:cn?(sc/cn*100).toFixed(1)+'% of connected':''}];
  $('#kpis').innerHTML=kpis.map(k=>`<div class="kpi"><div class="k-label">${esc(k.k)}</div><div class="k-val">${esc(String(k.v))}</div><div class="k-sub">${esc(k.s)}</div></div>`).join('');
 }
 
-// Horizontal bars (reusable)
 function renderHBars(el,items,color){
  const max=items.reduce((m,i)=>Math.max(m,i.val),0)||1;
- el.innerHTML='<div class="hbar-chart">'+items.map(i=>{
-  const pct=(i.val/max*100).toFixed(0);
+ el.innerHTML='<div class="hbar-chart">'+items.map(i=>{const pct=(i.val/max*100).toFixed(0);
   return `<div class="hbar-row"><div class="hbar-lbl">${esc(i.label)}</div>
    <div class="hbar-track"><div class="hbar-fill" style="width:${pct}%;background:${color||'var(--ac)'}"></div></div>
-   <div class="hbar-val">${i.valStr||i.val}</div></div>`;
- }).join('')+'</div>';
+   <div class="hbar-val">${i.valStr||i.val}</div></div>`}).join('')+'</div>';
 }
 
-// Hangup breakdown
 function renderHangup(bkts){
- const data=buildHangupBreakdown(bkts);
- const el=$('#p-hangup');
+ const data=buildHangupBreakdown(bkts);const el=$('#p-hangup');
  if(!data.length){el.innerHTML='<div class="empty-state">No data</div>';return}
- const items=data.map(d=>({label:d.label,val:d.count,valStr:d.count+' ('+d.pct.toFixed(1)+'%)'}));
- renderHBars(el,items,'var(--in)');
+ renderHBars(el,data.map(d=>({label:d.label,val:d.count,valStr:d.count+' ('+d.pct.toFixed(1)+'%)'})),'var(--in)');
 }
 
-// Heatmap
 function renderHeatmap(bkts){
  const el=$('#p-heatmap');
- // City filter
  const cities=new Set();bkts.forEach(b=>b.calls.forEach(c=>{const l=leadOf(c.leadId);if(l&&l.city)cities.add(l.city)}));
- const cityArr=['all',...[...cities].sort()];
- let selCity='all';
-
+ const cityArr=['all',...[...cities].sort()];let selCity='all';
  function draw(){
-  const grid=buildHeatmap(bkts,selCity);
-  const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const grid=buildHeatmap(bkts,selCity);const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   let h='<div class="hmap-filter"><label>City:</label><select id="hmCity">'+cityArr.map(c=>`<option value="${esc(c)}"${c===selCity?' selected':''}>${c==='all'?'All cities':esc(c)}</option>`).join('')+'</select></div>';
-  h+='<div class="hmap-wrap"><div class="hmap">';
-  // Header row
-  h+='<div class="hmap-hdr"></div>';
+  h+='<div class="hmap-wrap"><div class="hmap"><div class="hmap-hdr"></div>';
   for(let hr=0;hr<24;hr++)h+=`<div class="hmap-hdr">${hr}</div>`;
-  // Data rows
-  for(let d=0;d<7;d++){
-   h+=`<div class="hmap-row-hdr">${days[d]}</div>`;
-   for(let hr=0;hr<24;hr++){
-    const cell=grid[d][hr];const rate=cell.t?(cell.c/cell.t*100):0;
+  for(let d=0;d<7;d++){h+=`<div class="hmap-row-hdr">${days[d]}</div>`;
+   for(let hr=0;hr<24;hr++){const cell=grid[d][hr];const rate=cell.t?(cell.c/cell.t*100):0;
     const cls=!cell.t?'heat-0':rate>=80?'heat-5':rate>=60?'heat-4':rate>=40?'heat-3':rate>=20?'heat-2':'heat-1';
-    h+=`<div class="hmap-cell ${cls}" title="${days[d]} ${hr}:00 — ${cell.c}/${cell.t} (${rate.toFixed(0)}%)">${cell.t?rate.toFixed(0)+'%':''}</div>`;
-   }
-  }
+    h+=`<div class="hmap-cell ${cls}" title="${days[d]} ${hr}:00 — ${cell.c}/${cell.t} (${rate.toFixed(0)}%)">${cell.t?rate.toFixed(0)+'%':''}</div>`;}}
   h+='</div></div>';
   h+='<div class="hmap-scale"><span>Low</span><span class="heat-1" style="width:18px;height:12px;display:inline-block;border-radius:2px"></span><span class="heat-2" style="width:18px;height:12px;display:inline-block;border-radius:2px"></span><span class="heat-3" style="width:18px;height:12px;display:inline-block;border-radius:2px"></span><span class="heat-4" style="width:18px;height:12px;display:inline-block;border-radius:2px"></span><span class="heat-5" style="width:18px;height:12px;display:inline-block;border-radius:2px"></span><span>High</span></div>';
-  el.innerHTML=h;
-  const sel=el.querySelector('#hmCity');
-  if(sel)sel.onchange=e=>{selCity=e.target.value;draw()};
+  el.innerHTML=h;const sel=el.querySelector('#hmCity');if(sel)sel.onchange=e=>{selCity=e.target.value;draw()};
  }
  draw();
 }
 
-// Retry effectiveness
 function renderRetry(bkts){
  const data=buildRetry(bkts);const el=$('#p-retry');
  if(!data.length){el.innerHTML='<div class="empty-state">No data</div>';return}
  let h='<div class="hbar-chart">';
- const maxR=Math.max(...data.map(d=>d.rate),1);
- data.forEach(d=>{
-  const pct=(d.rate/Math.max(maxR,100)*100).toFixed(0);
-  const color=d.rate>=50?'var(--ok)':d.rate>=30?'var(--wn)':'var(--dn)';
+ data.forEach(d=>{const pct=(d.rate).toFixed(0);const color=d.rate>=50?'var(--ok)':d.rate>=30?'var(--wn)':'var(--dn)';
   h+=`<div class="hbar-row"><div class="hbar-lbl">Attempt #${esc(d.attempt)}</div>
    <div class="hbar-track"><div class="hbar-fill" style="width:${pct}%;background:${color}"></div></div>
-   <div class="hbar-val">${d.rate.toFixed(1)}% (${d.connected}/${d.total})</div></div>`;
- });
- h+='</div>';
- el.innerHTML=h;
+   <div class="hbar-val">${d.rate.toFixed(1)}% (${d.connected}/${d.total})</div></div>`});
+ h+='</div>';el.innerHTML=h;
 }
 
-// Short calls
 function renderShortCalls(bkts){
  const data=buildShortCalls(bkts);const el=$('#p-short');
  let h=`<div style="margin-bottom:16px"><span style="font-size:24px;font-family:'Instrument Serif',serif">${data.count}</span>
-  <span style="color:var(--tm);font-size:13px"> short calls (&lt;5s connected) out of ${data.total} connected (${data.pct.toFixed(1)}%)</span></div>`;
- if(data.calls.length){
-  h+='<table class="dtable"><thead><tr><th>Lead</th><th>City</th><th>Duration</th><th>Hangup</th><th>Date</th></tr></thead><tbody>';
-  data.calls.forEach(c=>{
-   const l=leadOf(c.leadId);
+  <span style="color:var(--tm);font-size:13px"> short calls (&lt;5s) out of ${data.total} connected (${data.pct.toFixed(1)}%)</span></div>`;
+ if(data.calls.length){h+='<table class="dtable"><thead><tr><th>Lead</th><th>City</th><th>Duration</th><th>Hangup</th><th>Date</th></tr></thead><tbody>';
+  data.calls.forEach(c=>{const l=leadOf(c.leadId);
    h+=`<tr><td><a class="lead-link" onclick="window.open('index.html#${esc(c.leadId)}','_blank')">${esc(c.leadId)}</a></td>
     <td>${esc(l?l.city:'')}</td><td class="mono">${c.duration!=null?c.duration.toFixed(1)+'s':''}</td>
-    <td>${esc(HL[c.hangup]||c.hangup||'')}</td><td class="mono nowrap">${esc(callDateOf(c))}</td></tr>`;
-  });
-  h+='</tbody></table>';
- }else h+='<div class="empty-state">No short calls found</div>';
+    <td>${esc(HL[c.hangup]||c.hangup||'')}</td><td class="mono nowrap">${esc(callDateOf(c))}</td></tr>`});
+  h+='</tbody></table>';}
  el.innerHTML=h;
 }
 
-// Duration by scenario
 function renderDurByScenario(bkts){
  const data=buildDurByScenario(bkts);const el=$('#p-durscn');
  if(!data.length){el.innerHTML='<div class="empty-state">No data</div>';return}
- const items=data.slice(0,12).map(d=>({label:d.scenario,val:d.avg,valStr:fdur(d.avg)+' ('+d.count+' calls)'}));
- renderHBars(el,items,'var(--in)');
+ renderHBars(el,data.slice(0,12).map(d=>({label:d.scenario,val:d.avg,valStr:fdur(d.avg)+' ('+d.count+' calls)'})),'var(--in)');
 }
 
-// Duration vs milestone
 function renderDurVsMilestone(bkts){
  const data=buildDurVsMilestone(bkts);const el=$('#p-durout');
  if(!data.length){el.innerHTML='<div class="empty-state">No data</div>';return}
- const items=data.map(d=>({label:d.label,val:d.avg,valStr:fdur(d.avg)+' ('+d.count+')'}));
- renderHBars(el,items,'var(--ac)');
- el.innerHTML+='<div style="margin-top:12px;font-size:11px;color:var(--tm);font-style:italic">↑ Higher milestones tend to have longer avg call durations, confirming that deeper conversations drive pipeline progression.</div>';
+ renderHBars(el,data.map(d=>({label:d.label,val:d.avg,valStr:fdur(d.avg)+' ('+d.count+')'})),'var(--ac)');
+ el.innerHTML+='<div style="margin-top:12px;font-size:11px;color:var(--tm);font-style:italic">Higher milestones tend to correlate with longer avg call durations.</div>';
 }
 
-// Pipeline velocity table
 function renderVelocity(bkts){
  const data=buildVelocity(bkts);const el=$('#p-velocity');
- if(!data.length){el.innerHTML='<div class="empty-state">Not enough multi-call leads in range</div>';return}
+ if(!data.length){el.innerHTML='<div class="empty-state">Not enough multi-call leads</div>';return}
  let h='<table class="dtable"><thead><tr><th>From</th><th>→ To</th><th class="num">Avg calls</th><th class="num">Avg days</th><th class="num">Leads</th></tr></thead><tbody>';
  data.forEach(d=>{h+=`<tr><td>${esc(d.from)}</td><td>${esc(d.to)}</td><td class="mono num">${d.avgCalls}</td><td class="mono num">${d.avgDays}</td><td class="mono num">${d.count}</td></tr>`});
- h+='</tbody></table>';
- el.innerHTML=h;
+ h+='</tbody></table>';el.innerHTML=h;
 }
 
-// Stalled leads table
 function renderStalled(bkts){
  const data=buildStalled(bkts);const el=$('#p-stalled');
- if(!data.length){el.innerHTML='<div class="empty-state">No leads stalled for 3+ calls at same milestone</div>';return}
- let h=`<div style="margin-bottom:10px;font-size:12px;color:var(--tm)">${data.length} leads stuck at the same milestone for 3+ consecutive calls</div>`;
- h+='<table class="dtable"><thead><tr><th>Lead</th><th>City</th><th>Stuck at</th><th class="num">Stuck calls</th><th class="num">Total calls</th><th>Last call</th></tr></thead><tbody>';
+ if(!data.length){el.innerHTML='<div class="empty-state">No leads stalled 3+ calls at same milestone</div>';return}
+ let h=`<div style="margin-bottom:10px;font-size:12px;color:var(--tm)">${data.length} leads stuck</div>`;
+ h+='<table class="dtable"><thead><tr><th>Lead</th><th>City</th><th>Stuck at</th><th class="num">Stuck</th><th class="num">Total</th><th>Last call</th></tr></thead><tbody>';
  data.slice(0,50).forEach(d=>{
   h+=`<tr><td><a class="lead-link" onclick="window.open('index.html#${esc(d.id)}','_blank')">${esc(d.id)}</a></td>
    <td>${esc(d.city||'')}</td><td><span class="badge ${MB[d.milestone]||'b-ne'}">${esc(d.mlabel)}</span></td>
-   <td class="mono num">${d.stuck}</td><td class="mono num">${d.total}</td><td class="mono nowrap">${esc(d.lastDate)}</td></tr>`;
- });
- h+='</tbody></table>';
- el.innerHTML=h;
+   <td class="mono num">${d.stuck}</td><td class="mono num">${d.total}</td><td class="mono nowrap">${esc(d.lastDate)}</td></tr>`});
+ h+='</tbody></table>';el.innerHTML=h;
 }
 
-// Regressions table
 function renderRegressions(bkts){
  const data=buildRegressions(bkts);const el=$('#p-regress');
- if(!data.length){el.innerHTML='<div class="empty-state">No milestone regressions detected — great!</div>';return}
- let h=`<div style="margin-bottom:10px;font-size:12px;color:var(--tm)">${data.length} regression event${data.length===1?'':'s'} where a lead moved backward in the pipeline</div>`;
- h+='<table class="dtable"><thead><tr><th>Lead</th><th>City</th><th>Peak milestone</th><th>Regressed to</th><th class="num">Call #</th><th>Date</th></tr></thead><tbody>';
+ if(!data.length){el.innerHTML='<div class="empty-state">No regressions detected — great!</div>';return}
+ let h=`<div style="margin-bottom:10px;font-size:12px;color:var(--tm)">${data.length} regression event${data.length===1?'':'s'}</div>`;
+ h+='<table class="dtable"><thead><tr><th>Lead</th><th>City</th><th>Peak</th><th>Regressed to</th><th class="num">Call #</th><th>Date</th></tr></thead><tbody>';
  data.slice(0,50).forEach(d=>{
   h+=`<tr><td><a class="lead-link" onclick="window.open('index.html#${esc(d.id)}','_blank')">${esc(d.id)}</a></td>
    <td>${esc(d.city||'')}</td><td><span class="badge b-ok">${esc(d.fl)}</span></td>
    <td><span class="badge b-dn">${esc(d.tl)}</span></td>
-   <td class="mono num">${d.call}</td><td class="mono nowrap">${esc(d.date)}</td></tr>`;
- });
- h+='</tbody></table>';
- el.innerHTML=h;
+   <td class="mono num">${d.call}</td><td class="mono nowrap">${esc(d.date)}</td></tr>`});
+ h+='</tbody></table>';el.innerHTML=h;
 }
 
-// Visit outcomes
 function renderVisitOutcomes(bkts){
  const d=buildVisitOutcomes(bkts);const el=$('#p-visit');
- if(!d.total){el.innerHTML='<div class="empty-state">No visit data in range</div>';return}
+ if(!d.total){el.innerHTML='<div class="empty-state">No visit data</div>';return}
  const pct=v=>d.total?(v/d.total*100).toFixed(1)+'%':'0%';
  el.innerHTML=`<div class="visit-funnel">
-  <div class="vf-item vf-in"><div class="vf-val">${d.total}</div><div class="vf-lbl">Total with visit intent</div></div>
-  <div class="vf-item vf-in"><div class="vf-val">${d.scheduled}</div><div class="vf-lbl">Scheduled only</div><div class="vf-pct">${pct(d.scheduled)}</div></div>
-  <div class="vf-item vf-ok"><div class="vf-val">${d.confirmed}</div><div class="vf-lbl">Confirmed / visited</div><div class="vf-pct">${pct(d.confirmed)}</div></div>
+  <div class="vf-item vf-in"><div class="vf-val">${d.total}</div><div class="vf-lbl">Visit intent</div></div>
+  <div class="vf-item vf-in"><div class="vf-val">${d.scheduled}</div><div class="vf-lbl">Scheduled</div><div class="vf-pct">${pct(d.scheduled)}</div></div>
+  <div class="vf-item vf-ok"><div class="vf-val">${d.confirmed}</div><div class="vf-lbl">Confirmed</div><div class="vf-pct">${pct(d.confirmed)}</div></div>
   <div class="vf-item vf-wn"><div class="vf-val">${d.rescheduled}</div><div class="vf-lbl">Rescheduled</div><div class="vf-pct">${pct(d.rescheduled)}</div></div>
-  <div class="vf-item vf-dn"><div class="vf-val">${d.cancelled}</div><div class="vf-lbl">Cancelled</div><div class="vf-pct">${pct(d.cancelled)}</div></div>
- </div>`;
+  <div class="vf-item vf-dn"><div class="vf-val">${d.cancelled}</div><div class="vf-lbl">Cancelled</div><div class="vf-pct">${pct(d.cancelled)}</div></div></div>`;
 }
 
-// Call gap analysis
 function renderGapAnalysis(bkts){
  const data=buildGapAnalysis(bkts);const el=$('#p-gap');
  if(!data.length){el.innerHTML='<div class="empty-state">Need multi-call leads</div>';return}
  let h='<table class="dtable"><thead><tr><th>Gap</th><th class="num">Calls</th><th class="num">Pickup %</th><th class="num">Conv %</th></tr></thead><tbody>';
- data.forEach(d=>{
-  const pkColor=d.pickupRate>=50?'var(--ok)':d.pickupRate>=30?'var(--wn)':'var(--dn)';
+ data.forEach(d=>{const pkC=d.pickupRate>=50?'var(--ok)':d.pickupRate>=30?'var(--wn)':'var(--dn)';
   h+=`<tr><td class="mono">${esc(d.label)}</td><td class="mono num">${d.total}</td>
-   <td class="mono num" style="color:${pkColor}">${d.pickupRate.toFixed(1)}%</td>
-   <td class="mono num">${d.convRate.toFixed(1)}%</td></tr>`;
- });
+   <td class="mono num" style="color:${pkC}">${d.pickupRate.toFixed(1)}%</td>
+   <td class="mono num">${d.convRate.toFixed(1)}%</td></tr>`});
  h+='</tbody></table>';
  const best=data.reduce((a,b)=>b.pickupRate>a.pickupRate?b:a,data[0]);
- h+=`<div style="margin-top:10px;font-size:11px;color:var(--tm)">💡 Best pickup rate: <b>${esc(best.label)}</b> gap (${best.pickupRate.toFixed(1)}% pickup)</div>`;
+ h+=`<div style="margin-top:10px;font-size:11px;color:var(--tm)">💡 Best pickup: <b>${esc(best.label)}</b> gap (${best.pickupRate.toFixed(1)}%)</div>`;
  el.innerHTML=h;
 }
 
-// Pref deepening
 function renderPrefDeepening(bkts){
  const data=buildPrefDeepening(bkts);const el=$('#p-pref');
- if(!data.length){el.innerHTML='<div class="empty-state">No connected calls with pref data</div>';return}
- let h='<div style="margin-bottom:10px;font-size:12px;color:var(--tm)">Average preference fields filled per connected call, by attempt number (out of 9 fields)</div>';
- const maxV=Math.max(...data.map(d=>+d.avg),1);
- h+='<div class="hbar-chart">';
- data.forEach(d=>{
-  const pct=(+d.avg/9*100).toFixed(0);
+ if(!data.length){el.innerHTML='<div class="empty-state">No data</div>';return}
+ let h='<div style="margin-bottom:10px;font-size:12px;color:var(--tm)">Avg pref fields filled per connected call (out of 9)</div><div class="hbar-chart">';
+ data.forEach(d=>{const pct=(+d.avg/9*100).toFixed(0);
   h+=`<div class="hbar-row"><div class="hbar-lbl">Call #${esc(d.attempt)}</div>
    <div class="hbar-track"><div class="hbar-fill" style="width:${pct}%;background:var(--ok)"></div></div>
-   <div class="hbar-val">${d.avg} fields (${d.count} calls)</div></div>`;
- });
+   <div class="hbar-val">${d.avg} (${d.count})</div></div>`});
  h+='</div>';
- if(data.length>=2){
-  const first=+data[0].avg,last=+data[data.length-1].avg;
-  const dir=last>first?'↑ increasing':'↓ decreasing';
-  h+=`<div style="margin-top:10px;font-size:11px;color:var(--tm)">💡 Preference depth is <b>${dir}</b> over calls (${first} → ${last} avg fields)</div>`;
- }
+ if(data.length>=2){const f=+data[0].avg,l=+data[data.length-1].avg;
+  h+=`<div style="margin-top:10px;font-size:11px;color:var(--tm)">💡 Depth ${l>f?'↑ increasing':'↓ decreasing'} (${f} → ${l})</div>`}
  el.innerHTML=h;
 }
 
-// Budget shift
 function renderBudgetShift(bkts){
  const data=buildBudgetShift(bkts);const el=$('#p-budget');
- if(!data.length){el.innerHTML='<div class="empty-state">Need leads with budget data across multiple calls</div>';return}
- const up=data.filter(d=>d.shift>0).length,dn=data.filter(d=>d.shift<0).length,flat=data.filter(d=>d.shift===0).length;
- let h=`<div style="margin-bottom:12px;font-size:12px;color:var(--tm)">${data.length} leads with budget changes: <span class="arr-up">${up} budget up ↑</span> · <span class="arr-dn">${dn} budget down ↓</span> · ${flat} unchanged</div>`;
- h+='<table class="dtable"><thead><tr><th>Lead</th><th>City</th><th class="num">First midpoint</th><th class="num">Last midpoint</th><th class="num">Change</th></tr></thead><tbody>';
- data.slice(0,30).forEach(d=>{
-  const cls=d.shift>0?'arr-up':d.shift<0?'arr-dn':'arr-flat';
+ if(!data.length){el.innerHTML='<div class="empty-state">Need leads with budget across calls</div>';return}
+ const up=data.filter(d=>d.shift>0).length,dn=data.filter(d=>d.shift<0).length;
+ let h=`<div style="margin-bottom:12px;font-size:12px;color:var(--tm)">${data.length} leads: <span class="arr-up">${up} ↑</span> · <span class="arr-dn">${dn} ↓</span></div>`;
+ h+='<table class="dtable"><thead><tr><th>Lead</th><th>City</th><th class="num">First</th><th class="num">Last</th><th class="num">Change</th></tr></thead><tbody>';
+ data.slice(0,30).forEach(d=>{const cls=d.shift>0?'arr-up':d.shift<0?'arr-dn':'arr-flat';
   h+=`<tr><td><a class="lead-link" onclick="window.open('index.html#${esc(d.id)}','_blank')">${esc(d.id)}</a></td>
    <td>${esc(d.city||'')}</td><td class="mono num">${fp(d.first)}</td><td class="mono num">${fp(d.last)}</td>
-   <td class="mono num ${cls}">${d.shift>0?'+':''}${d.pct.toFixed(1)}%</td></tr>`;
- });
- h+='</tbody></table>';
- el.innerHTML=h;
+   <td class="mono num ${cls}">${d.shift>0?'+':''}${d.pct.toFixed(1)}%</td></tr>`});
+ h+='</tbody></table>';el.innerHTML=h;
 }
 
-// Scenario distribution (donut)
+function polarXY(cx,cy,r,deg){const rad=(deg-90)*Math.PI/180;return{x:cx+r*Math.cos(rad),y:cy+r*Math.sin(rad)}}
 function renderScenarioDist(bkts){
  const data=buildScenarioDist(bkts);const el=$('#p-scenario');
  if(!data.length){el.innerHTML='<div class="empty-state">No data</div>';return}
- const total=data.reduce((s,d)=>s+d.count,0);
- // SVG donut
- const size=180,cx=size/2,cy=size/2,r=65,sw=30;
- let svgH=`<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" class="donut-svg">`;
- let angle=0;
- data.slice(0,10).forEach((d,i)=>{
-  const sliceAngle=(d.count/total)*360;
-  const startA=angle,endA=angle+sliceAngle;
-  // Arc path
-  const s1=polarXY(cx,cy,r,startA),e1=polarXY(cx,cy,r,endA);
-  const large=sliceAngle>180?1:0;
-  svgH+=`<path d="M ${s1.x} ${s1.y} A ${r} ${r} 0 ${large} 1 ${e1.x} ${e1.y}" fill="none" stroke="${COLORS[i%COLORS.length]}" stroke-width="${sw}" opacity="0.85"/>`;
-  angle=endA;
- });
- svgH+='</svg>';
- // Legend
- let lgH='<div class="donut-legend">';
- data.slice(0,10).forEach((d,i)=>{
-  lgH+=`<div class="dl-row"><span class="dl-sw" style="background:${COLORS[i%COLORS.length]}"></span><span class="dl-label">${esc(d.scenario)}</span><span class="dl-val">${d.count} (${d.pct.toFixed(1)}%)</span></div>`;
- });
- if(data.length>10)lgH+=`<div class="dl-row"><span class="dl-sw" style="background:var(--tf)"></span><span class="dl-label">Others</span><span class="dl-val">${data.slice(10).reduce((s,d)=>s+d.count,0)}</span></div>`;
- lgH+='</div>';
- el.innerHTML=`<div class="donut-wrap">${svgH}${lgH}</div>`;
+ const total=data.reduce((s,d)=>s+d.count,0);const size=180,cx=size/2,cy=size/2,r=65,sw=30;
+ let svg=`<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" class="donut-svg">`;let angle=0;
+ data.slice(0,10).forEach((d,i)=>{const sl=(d.count/total)*360;if(sl<0.5){angle+=sl;return}
+  const s1=polarXY(cx,cy,r,angle),e1=polarXY(cx,cy,r,angle+sl);const large=sl>180?1:0;
+  svg+=`<path d="M ${s1.x} ${s1.y} A ${r} ${r} 0 ${large} 1 ${e1.x} ${e1.y}" fill="none" stroke="${COLORS[i%COLORS.length]}" stroke-width="${sw}" opacity="0.85"/>`;angle+=sl});
+ svg+='</svg>';
+ let lg='<div class="donut-legend">';
+ data.slice(0,10).forEach((d,i)=>{lg+=`<div class="dl-row"><span class="dl-sw" style="background:${COLORS[i%COLORS.length]}"></span><span class="dl-label">${esc(d.scenario)}</span><span class="dl-val">${d.count} (${d.pct.toFixed(1)}%)</span></div>`});
+ lg+='</div>';el.innerHTML=`<div class="donut-wrap">${svg}${lg}</div>`;
 }
-function polarXY(cx,cy,r,deg){const rad=(deg-90)*Math.PI/180;return{x:cx+r*Math.cos(rad),y:cy+r*Math.sin(rad)}}
 
-// ========== SVG CHART HELPERS (for daily trend charts) ==========
+// ===== SVG CHARTS =====
 
 function renderBarLineChart(svgId,buckets,opts){
  const svg=$('#'+svgId);if(!svg)return;
  if(!buckets.length){svg.innerHTML='<text x="50%" y="50%" text-anchor="middle" class="axis-label">No data</text>';return}
  const w=svg.clientWidth||600,h=svg.clientHeight||260;
  const M={t:12,r:14,b:32,l:42},iw=w-M.l-M.r,ih=h-M.t-M.b;
- const series=opts.series(buckets);
- let maxY=0;series.forEach(s=>s.values.forEach(v=>{if(v>maxY)maxY=v}));
+ const series=opts.series(buckets);let maxY=0;series.forEach(s=>s.values.forEach(v=>{if(v>maxY)maxY=v}));
  if(!maxY)maxY=1;maxY=Math.ceil(maxY*1.1/5)*5||maxY+1;
- const xBand=iw/buckets.length;
- const xpos=i=>M.l+xBand*i+xBand/2;
- const ypos=v=>M.t+ih-(v/maxY)*ih;
+ const xBand=iw/buckets.length;const xpos=i=>M.l+xBand*i+xBand/2;const ypos=v=>M.t+ih-(v/maxY)*ih;
  let out='';
  for(let i=0;i<=4;i++){const v=maxY*i/4,y=ypos(v);
-  out+=`<line class="grid-line" x1="${M.l
+  out+=`<line class="grid-line" x1="${M.l}" y1="${y}" x2="${w-M.r}" y2="${y}"/>`;
+  out+=`<text class="axis-label" x="${M.l-6}" y="${y+3}" text-anchor="end">${Math.round(v)}</text>`}
+ const step=Math.max(1,Math.floor(buckets.length/12));
+ buckets.forEach((b,i)=>{if(i%step===0)out+=`<text class="axis-label" x="${xpos(i)}" y="${h-M.b+16}" text-anchor="middle">${b.date.slice(5)}</text>`});
+ series.forEach(s=>{
+  if(s.type==='bar'){const bw=Math.max(2,xBand*0.5);
+   s.values.forEach((v,i)=>{const x=xpos(i)-bw/2,y=ypos(v),ht=ypos(0)-y;
+    out+=`<rect class="bar" x="${x}" y="${y}" width="${bw}" height="${ht}" fill="${s.color}" rx="1.5"><title>${buckets[i].date}: ${Math.round(v)}</title></rect>`})}
+  else{let pathD='',areaD='';
+   s.values.forEach((v,i)=>{const x=xpos(i),y=ypos(v);pathD+=(i?'L':'M')+x+' '+y;areaD+=(i?'L':'M')+x+' '+y});
+   areaD+=`L${xpos(s.values.length-1)} ${ypos(0)}L${xpos(0)} ${ypos(0)}Z`;
+   out+=`<path class="area" d="${areaD}" fill="${s.color}"/>`;
+   out+=`<path class="line" d="${pathD}" stroke="${s.color}"/>`;
+   s.values.forEach((v,i)=>{out+=`<circle class="dot" cx="${xpos(i)}" cy="${ypos(v)}" r="3" fill="${s.color}"><title>${buckets[i].date}: ${v.toFixed?v.toFixed(1):v}</title></circle>`})}
+ });
+ svg.innerHTML=out;
+}
 
+function renderMilestoneStack(svgId,buckets){
+ const svg=$('#'+svgId);if(!svg||!buckets.length)return;
+ const msList=Object.keys(ML);const msColors=COLORS;
+ const data=buckets.map(b=>{const cts={};msList.forEach(m=>cts[m]=0);
+  b.calls.forEach(c=>{if(c.milestone&&cts.hasOwnProperty(c.milestone))cts[c.milestone]++});return cts});
+ let maxY=0;data.forEach(d=>{let s=0;msList.forEach(m=>s+=d[m]);if(s>maxY)maxY=s});
+ if(!maxY){svg.innerHTML='';return}maxY=Math.ceil(maxY*1.1);
+ const w=svg.clientWidth||900,h=svg.clientHeight||300;
+ const M={t:12,r:14,b:32,l:42},iw=w-M.l-M.r,ih=h-M.t-M.b;
+ const xBand=iw/buckets.length;const xpos=i=>M.l+xBand*i+xBand/2;const ypos=v=>M.t+ih-(v/maxY)*ih;
+ let out='';
+ for(let i=0;i<=4;i++){const v=maxY*i/4,y=ypos(v);
+  out+=`<line class="grid-line" x1="${M.l}" y1="${y}" x2="${w-M.r}" y2="${y}"/>`;
+  out+=`<text class="axis-label" x="${M.l-6}" y="${y+3}" text-anchor="end">${Math.round(v)}</text>`}
+ const step=Math.max(1,Math.floor(buckets.length/12));
+ buckets.forEach((b,i)=>{if(i%step===0)out+=`<text class="axis-label" x="${xpos(i)}" y="${h-M.b+16}" text-anchor="middle">${b.date.slice(5)}</text>`});
+ const cumul=data.map(()=>0);
+ const activeKeys=msList.filter(k=>data.some(d=>d[k]>0));
+ activeKeys.forEach((ms,mi)=>{const color=msColors[mi%msColors.length];
+  let pathU='',pathD='';
+  data.forEach((d,i)=>{const base=cumul[i];cumul[i]+=d[ms];const x=xpos(i);
+   pathU+=(i?'L':'M')+x+' '+ypos(cumul[i]);pathD+=(i?'L':'M')+x+' '+ypos(base)});
+  const revD=data.map((_,i)=>`${xpos(data.length-1-i)},${ypos(cumul[data.length-1-i]-data[data.length-1-i][ms])}`).join(' L');
+  out+=`<path d="${pathU} L${revD} Z" fill="${color}" opacity="0.6"/>`;
+ });
+ svg.innerHTML=out;
+ const lg=$('#ch-ms-lg');
+ if(lg)lg.innerHTML=activeKeys.map((k,i)=>`<div class="lg-item"><span class="lg-sw" style="background:${msColors[i%msColors.length]}"></span>${ML[k]||k}</div>`).join('');
+}
+
+// ===== MAIN RENDER =====
+function render(){
+ const bkts=getFiltered();
+ if(!bkts.length){$('#kpis').innerHTML='<div class="empty-state" style="grid-column:1/-1">No data in selected range</div>';return}
+ renderKPIs(bkts);
+ renderFunnel('f-stage',buildStageFunnel(bkts));
+ renderFunnel('f-call',buildCallFunnel(bkts));
+ renderFunnel('f-intent',buildIntentFunnel(bkts));
+ renderHangup(bkts);
+ renderHeatmap(bkts);
+ renderRetry(bkts);
+ renderShortCalls(bkts);
+ renderDurByScenario(bkts);
+ renderDurVsMilestone(bkts);
+ renderVelocity(bkts);
+ renderStalled(bkts);
+ renderRegressions(bkts);
+ renderVisitOutcomes(bkts);
+ renderGapAnalysis(bkts);
+ renderPrefDeepening(bkts);
+ renderBudgetShift(bkts);
+ renderScenarioDist(bkts);
+ renderBarLineChart('ch-volume',bkts,{series:b=>[
+  {values:b.map(x=>x.calls.length),type:'bar',color:'var(--bds)'},
+  {values:b.map(x=>x.calls.filter(c=>c.connected).length),type:'bar',color:'var(--ok)'}]});
+ renderBarLineChart('ch-conv',bkts,{series:b=>[
+  {values:b.map(x=>{const cn=x.calls.filter(c=>c.connected).length;const cv=x.calls.filter(c=>c.conversion).length;return cn?(cv/cn*100):0}),type:'line',color:'var(--ac)'}]});
+ renderMilestoneStack('ch-ms',bkts);
+ renderBarLineChart('ch-dur',bkts,{series:b=>[
+  {values:b.map(x=>{const cn=x.calls.filter(c=>c.connected&&c.duration);return cn.length?(cn.reduce((s,c)=>s+c.duration,0)/cn.length):0}),type:'line',color:'var(--in)'}]});
+}
+
+setPreset('all');
 """
-
 def build_analytics(shared_css, shared_js, data_json):
     nav = NAV_HTML.replace("__EXTRA_HEADER__", "")
     html = page_head("Analytics — Lead Journey", "analytics")
