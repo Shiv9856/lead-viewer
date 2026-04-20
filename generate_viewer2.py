@@ -150,6 +150,7 @@ def build_leads(df):
             "connected": hangup in CONNECTED_HANGUPS,
             "scenario": scenario,
             "capability": cap,
+            "disposition_reason": _s(row.get("disposition_reason")),
             "mark_dnd": _b(row.get("Mark_DND")),
             "soft_dnd": _b(row.get("Soft_DND")),
             "handoff": _b(row.get("human_handoff")),
@@ -716,6 +717,43 @@ svg.chart .area{opacity:.15}
 @media (max-width:900px){.grid-2{grid-template-columns:1fr}}
 
 .empty-state{text-align:center;padding:40px 20px;color:var(--tf);font-style:italic;font-family:'Instrument Serif',serif;font-size:18px}
+
+/* ---- Advanced bot performance section (scoped with .ai- prefix) ---- */
+.ai-tabs{display:flex;gap:0;border-bottom:1px solid var(--bd);margin-bottom:14px;flex-wrap:wrap}
+.ai-tab{padding:9px 16px;font-size:12px;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--tm);cursor:pointer;font-family:inherit}
+.ai-tab:hover{color:var(--tx)}
+.ai-tab.on{color:var(--ac);border-bottom-color:var(--ac);font-weight:500}
+.ai-panel{display:none}.ai-panel.on{display:block}
+.ai-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.ai-kpi{background:var(--s2);border:1px solid var(--bd);border-radius:5px;padding:10px 12px}
+.ai-kpi .k{font-size:10px;color:var(--tf);text-transform:uppercase;letter-spacing:.08em}
+.ai-kpi .v{font-family:'Instrument Serif',serif;font-size:22px;margin-top:2px;color:var(--tx)}
+.ai-kpi .s{font-size:10px;color:var(--tm);margin-top:2px}
+.ai-tbl{width:100%;border-collapse:collapse;font-size:11px}
+.ai-tbl th{text-align:left;padding:7px 9px;font-weight:500;color:var(--tm);border-bottom:1px solid var(--bd);font-size:10px;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap}
+.ai-tbl td{padding:7px 9px;border-bottom:1px solid var(--bd);vertical-align:middle}
+.ai-tbl tr:hover td{background:var(--s2)}
+.ai-tbl td.num{font-family:'IBM Plex Mono',monospace;text-align:right;white-space:nowrap}
+.ai-tbl td.dim{opacity:.45}
+.ai-tbl td.dim::after{content:" n<20";font-size:9px;color:var(--wn);margin-left:4px}
+.ai-bar-row{display:grid;grid-template-columns:170px 1fr 130px;align-items:center;gap:10px;padding:4px 0;font-size:11px}
+.ai-bar-row .lbl{color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ai-bar-track{height:20px;background:var(--s2);border-radius:3px;position:relative;overflow:hidden}
+.ai-bar-fill{height:100%;border-radius:3px;display:flex;align-items:center;padding:0 7px;color:#fff;font-size:10px;font-weight:500;white-space:nowrap}
+.ai-bar-row .meta{text-align:right;color:var(--tm);font-family:'IBM Plex Mono',monospace;font-size:10px}
+.ai-sev{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.ai-sev.good{background:var(--ok)}.ai-sev.warn{background:var(--wn)}.ai-sev.bad{background:var(--dn)}
+.ai-pain-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:12px;margin-bottom:14px}
+.ai-pain-card{background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:12px 13px}
+.ai-pain-card .hd{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;gap:10px}
+.ai-pain-card .hd .t{font-weight:500;color:var(--tx);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+.ai-pain-card .hd .n{font-family:'IBM Plex Mono',monospace;color:var(--ac);font-size:13px}
+.ai-pain-card .sub{font-size:10px;color:var(--tf);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em}
+.ai-pain-card .pct{font-size:10px;color:var(--tm);margin-bottom:8px}
+.ai-pain-card .quote{font-size:11px;color:var(--tm);border-left:2px solid var(--bd);padding:3px 0 3px 8px;margin-top:6px;font-style:italic;line-height:1.45;max-height:3.6em;overflow:hidden}
+.ai-pain-card.warn{border-left:3px solid var(--wn)}
+.ai-pain-card.bad{border-left:3px solid var(--dn)}
+.ai-pain-card.good{border-left:3px solid var(--ok)}
 """
 
 ANALYTICS_BODY = '''<div class="wrap">
@@ -777,6 +815,22 @@ ANALYTICS_BODY = '''<div class="wrap">
  <div class="chart-legend">
   <div class="lg-item"><span class="lg-sw" style="background:var(--in)"></span>Avg duration (connected)</div>
  </div>
+</div>
+
+<div class="card">
+ <div class="card-h"><div class="card-t">Advanced bot performance</div><div class="card-s">Objections · visit funnel · hub scorecard · handoff reasons</div></div>
+ <div class="ai-tabs">
+  <button class="ai-tab on" data-ai="ai-obj">Objections</button>
+  <button class="ai-tab" data-ai="ai-vis">Visit funnel</button>
+  <button class="ai-tab" data-ai="ai-hub">Hub scorecard</button>
+  <button class="ai-tab" data-ai="ai-han">Handoff reasons</button>
+  <button class="ai-tab" data-ai="ai-pain">Pain points</button>
+ </div>
+ <div class="ai-panel on" id="ai-obj"></div>
+ <div class="ai-panel" id="ai-vis"></div>
+ <div class="ai-panel" id="ai-hub"></div>
+ <div class="ai-panel" id="ai-han"></div>
+ <div class="ai-panel" id="ai-pain"></div>
 </div>
 
 <div class="tooltip" id="tt"></div>
@@ -1078,6 +1132,251 @@ function renderMilestone(buckets){
  $('#ch-ms-lg').innerHTML=keys.map((k,i)=>`<div class="lg-item"><span class="lg-sw" style="background:${colors[i]}"></span>${labels[k]}</div>`).join('');
 }
 
+// ---- ADVANCED BOT PERFORMANCE ----
+const AI_MIN_N=20;
+const aiEsc=esc;
+const aiPct=(n,d,p)=>!d?'0':((n/d)*100).toFixed(p==null?1:p);
+
+function aiCallsInRange(buckets){
+ // Flat list of calls inside selected range, with leadId attached (already in bucket.calls)
+ return buckets.flatMap(b=>b.calls);
+}
+function aiLeadsInRange(buckets){
+ const ids=new Set();buckets.forEach(b=>b.calls.forEach(c=>ids.add(c.leadId)));
+ return D.filter(l=>ids.has(l.id));
+}
+function aiCallInRange(l,buckets){
+ const dates=new Set(buckets.map(b=>b.date));
+ return l.calls.filter(c=>dates.has(callDate(c)));
+}
+
+// --- (1) Objection mix ---
+function aiRenderObjections(buckets){
+ const m={};
+ const leadsInR=aiLeadsInRange(buckets);
+ leadsInR.forEach(l=>{
+  const rc=aiCallInRange(l,buckets);
+  const converted=rc.some(c=>c.conversion);
+  const tdInterest=rc.some(c=>c.interested_for_td);
+  const seen=new Set();
+  rc.forEach(c=>{
+   const raw=c.rejected_reasons;if(!raw)return;
+   String(raw).split(/[,;|]/).forEach(r=>{
+    const k=r.trim().toLowerCase();
+    if(!k||k==='null'||k==='none'||k==='nan')return;
+    if(seen.has(k))return;seen.add(k);
+    if(!m[k])m[k]={leads:0,calls:0,td:0,converted:0};
+    m[k].leads++;
+    if(tdInterest)m[k].td++;
+    if(converted)m[k].converted++;
+   });
+  });
+  rc.forEach(c=>{
+   const raw=c.rejected_reasons;if(!raw)return;
+   String(raw).split(/[,;|]/).forEach(r=>{
+    const k=r.trim().toLowerCase();
+    if(!k||k==='null'||k==='none'||k==='nan')return;
+    if(m[k])m[k].calls++;
+   });
+  });
+ });
+ const rows=Object.entries(m).map(([k,v])=>({reason:k,...v,tdPct:+aiPct(v.td,v.leads),convPct:+aiPct(v.converted,v.leads,2)})).sort((a,b)=>b.leads-a.leads).slice(0,15);
+ const c=$('#ai-obj');
+ if(!rows.length){c.innerHTML='<div class="empty-state">No rejection reasons captured in this range</div>';return}
+ const max=rows[0].leads||1;
+ c.innerHTML=rows.map(r=>{
+  const w=(r.leads/max*100).toFixed(0);
+  return `<div class="ai-bar-row">
+   <div class="lbl" title="${aiEsc(r.reason)}">${aiEsc(r.reason)}</div>
+   <div class="ai-bar-track"><div class="ai-bar-fill" style="width:${w}%;background:var(--wn)">${r.leads} leads</div></div>
+   <div class="meta">${r.calls} calls · TD ${r.tdPct}% · conv ${r.convPct}%</div>
+  </div>`;
+ }).join('')+'<div class="card-s" style="margin-top:10px">Top reasons for losing the pitch. Teach the bot responses for the top 3 first.</div>';
+}
+
+// --- (2) Visit funnel + cancellation reasons ---
+function aiRenderVisits(buckets){
+ const leads=aiLeadsInRange(buckets);
+ const f={intent:0,scheduled:0,confirmed:0,showed:0,cancelled:0,rescheduled:0};
+ const reasons={};
+ leads.forEach(l=>{
+  const rc=aiCallInRange(l,buckets);
+  if(rc.some(c=>c.interested_for_td||c.milestone==='test_drive_scheduled'))f.intent++;
+  if(rc.some(c=>c.rescheduled))f.rescheduled++;
+  // Pull visits from any call meta (they are per-lead, same array duplicated per call row)
+  const seenVid=new Set();const allVisits=[];
+  l.calls.forEach(c=>{const vs=c.meta&&c.meta.visits;if(!vs)return;vs.forEach(v=>{if(!v.id||!seenVid.has(v.id)){seenVid.add(v.id);allVisits.push(v)}})});
+  allVisits.forEach(v=>{
+   const s=String(v.status||'').toLowerCase();
+   if(s.includes('sched')||s.includes('confirm')||s==='pending')f.scheduled++;
+   if(s.includes('confirm'))f.confirmed++;
+   const stn=String(v.td_status||'').toUpperCase();
+   if(stn==='COMPLETED'||stn==='SHOWED'||stn==='DONE')f.showed++;
+   if(v.td_cancelled){f.cancelled++;const r=(v.cancel_reason||'unknown').toLowerCase();reasons[r]=(reasons[r]||0)+1}
+  });
+ });
+ const base=Math.max(f.intent,1);
+ const steps=[['Visit intent',f.intent,'var(--ac)'],['Scheduled',f.scheduled,'var(--in)'],['Confirmed',f.confirmed,'var(--ok)'],['Showed up',f.showed,'var(--wn)'],['Cancelled',f.cancelled,'var(--dn)']];
+ let html=steps.map(([l,v,col])=>{
+  const w=(v/base*100).toFixed(1);
+  return `<div class="ai-bar-row"><div class="lbl">${l}</div><div class="ai-bar-track"><div class="ai-bar-fill" style="width:${w}%;background:${col}">${v}</div></div><div class="meta">${w}%</div></div>`;
+ }).join('');
+ const rEntries=Object.entries(reasons).sort((a,b)=>b[1]-a[1]).slice(0,8);
+ const tot=rEntries.reduce((s,x)=>s+x[1],0);
+ if(rEntries.length){
+  html+=`<div class="card-s" style="margin-top:14px;text-transform:uppercase;letter-spacing:.08em;font-size:10px">Cancellation reasons</div>`;
+  html+=rEntries.map(([r,n])=>`<div class="ai-bar-row"><div class="lbl" title="${aiEsc(r)}">${aiEsc(r)}</div><div class="ai-bar-track"><div class="ai-bar-fill" style="width:${(n/tot*100).toFixed(0)}%;background:var(--dn)">${n}</div></div><div class="meta">${aiPct(n,tot)}%</div></div>`).join('');
+ }
+ html+=`<div class="card-s" style="margin-top:12px">Biggest leak: Confirmed → Showed. Add a T-24h + T-2h reminder sequence to close this gap.</div>`;
+ if(f.intent+f.scheduled===0)html='<div class="empty-state">No visit data in selected range</div>';
+ $('#ai-vis').innerHTML=html;
+}
+
+// --- (3) Hub scorecard ---
+function aiRenderHubs(buckets){
+ const leads=aiLeadsInRange(buckets);
+ const h={};
+ leads.forEach(l=>{
+  const seenVid=new Set();const allVisits=[];
+  l.calls.forEach(c=>{const vs=c.meta&&c.meta.visits;if(!vs)return;vs.forEach(v=>{if(v.id&&!seenVid.has(v.id)){seenVid.add(v.id);allVisits.push(v)}})});
+  const lConverted=aiCallInRange(l,buckets).some(c=>c.conversion);
+  allVisits.forEach(v=>{
+   const name=v.hub||'Unknown';
+   if(!h[name])h[name]={visits:0,confirmed:0,showed:0,cancelled:0,converted:0,leads:new Set()};
+   const o=h[name];o.visits++;o.leads.add(l.id);
+   const s=String(v.status||'').toLowerCase();if(s.includes('confirm'))o.confirmed++;
+   const stn=String(v.td_status||'').toUpperCase();if(stn==='COMPLETED'||stn==='SHOWED')o.showed++;
+   if(v.td_cancelled)o.cancelled++;
+   if(lConverted)o.converted++;
+  });
+ });
+ const rows=Object.entries(h).map(([name,v])=>({hub:name,visits:v.visits,leads:v.leads.size,confirmed:v.confirmed,showed:v.showed,cancelled:v.cancelled,showRate:+aiPct(v.showed,v.confirmed),convRate:+aiPct(v.converted,v.leads.size,2)})).sort((a,b)=>b.visits-a.visits);
+ const c=$('#ai-hub');
+ if(!rows.length){c.innerHTML='<div class="empty-state">No hub-level visit data in selected range</div>';return}
+ c.innerHTML=`<table class="ai-tbl"><thead><tr><th>Hub</th><th class="num">Visits</th><th class="num">Leads</th><th class="num">Confirmed</th><th class="num">Showed</th><th class="num">Cancelled</th><th class="num">Show rate</th><th class="num">Conv %</th></tr></thead><tbody>`+rows.map(r=>{
+  const small=r.visits<AI_MIN_N;const cls=small?'dim':'';
+  const sev=r.convRate>=2?'good':r.convRate>=0.5?'warn':'bad';
+  return `<tr><td><span class="ai-sev ${sev}"></span>${aiEsc(r.hub)}</td><td class="num">${r.visits}</td><td class="num">${r.leads}</td><td class="num">${r.confirmed}</td><td class="num">${r.showed}</td><td class="num">${r.cancelled}</td><td class="num ${cls}">${r.showRate}%</td><td class="num ${cls}">${r.convRate}%</td></tr>`;
+ }).join('')+'</tbody></table><div class="card-s" style="margin-top:10px">Low show-rate at a hub is usually an RM/infrastructure problem, not a bot problem.</div>';
+}
+
+// --- (4) Handoff reasons ---
+function aiRenderHandoff(buckets){
+ const calls=aiCallsInRange(buckets);
+ const m={};let total=0;
+ calls.forEach(c=>{if(!c.handoff)return;total++;const r=(c.handoff_reason||'unspecified').toString().toLowerCase().trim()||'unspecified';m[r]=(m[r]||0)+1});
+ const rows=Object.entries(m).map(([k,v])=>({reason:k,count:v})).sort((a,b)=>b.count-a.count);
+ const c=$('#ai-han');
+ if(!rows.length){c.innerHTML='<div class="empty-state">No handoffs in selected range</div>';return}
+ const max=rows[0].count;
+ c.innerHTML=`<div class="ai-kpis"><div class="ai-kpi"><div class="k">Total handoffs</div><div class="v">${total}</div><div class="s">${aiPct(total,calls.length)}% of calls</div></div></div>`+
+  rows.map(r=>`<div class="ai-bar-row"><div class="lbl" title="${aiEsc(r.reason)}">${aiEsc(r.reason)}</div><div class="ai-bar-track"><div class="ai-bar-fill" style="width:${(r.count/max*100).toFixed(0)}%;background:var(--in)">${r.count}</div></div><div class="meta">${aiPct(r.count,total)}%</div></div>`).join('')+
+  '<div class="card-s" style="margin-top:10px">Top handoff reasons signal where the bot\'s script gaps are.</div>';
+}
+
+// --- (5) Pain points (transcript signal mining) ---
+// Analyses only the USER side of each transcript, looking for bilingual (Hindi/English/Hinglish)
+// signals grouped into ~10 pain categories. Filters IVR/hold-music noise so we don't flag the system.
+const AI_PAIN_CATS=[
+ {k:'budget',t:'Budget / price pushback',sub:'User thinks car is too expensive',sev:'bad',
+  rx:/(?:^|[^a-z0-9])(too expensive|costly|mehng|mahang|mehan?gi|महंग|महंगी|महँगी|sasta|saste|कम दाम|कम रेट|kam daam|kam rate|kam budget|budget kam|budget nahi|budget mein nahi|out of budget|over budget|afford nahi|afford nahin|bajat|price jyada|jyada mehnga|ज्यादा महंग|ज्यादा दाम|ज्यादा कीमत|discount|negotiat|कीमत|दाम ज्यादा|bhav kam|भाव कम|rate kam)/i},
+ {k:'loan',t:'Loan / EMI confusion',sub:'Finance option unclear, needs human',sev:'bad',
+  rx:/(?:^|[^a-z0-9])(loan|emi|finance|down ?payment|byaj|ब्याज|interest|bank se|bank loan|लोन|एमआई|e m i|डाउन पेमेंट|बैंक|samajh nahi aaya|samjha nahi|समझ नहीं|समझ में नहीं|समझा नहीं|समझने में नहीं|not clear|confus|nahi samjha|clarity|documents.*nahi|डाक्युमेंट.*गलत|गलत डाल)/i},
+ {k:'later',t:'"Call me later" / not now',sub:'User wants callback or is busy',sev:'warn',
+  rx:/(?:^|[^a-z0-9])(abhi nahi|baad mein|baad me|later|busy hoon|busy hun|time nahi|next month|next week|agle mahine|call back|call later|phir call|फिर कॉल|अभी नहीं|बाद में|thodi der baad|kal call|कल बात)/i},
+ {k:'already',t:'Already bought / not interested',sub:'Lead already lost',sev:'bad',
+  rx:/(?:^|[^a-z0-9])(already bought|le liya|gadi le li|gadi le liya|kharid liya|खरीद लिया|खरीदली|ले ली|ले लिया|bought already|doosri gaadi|doosri car|dusri gaadi|dusri car|दूसरी कार|दूसरी गाड़ी|दूसरी गाडी|car mil gai|car mil gayi|मिल गई|मिल गया|ab nahi chahiye|अब नहीं चाहिए|not interested anymore)/i},
+ {k:'wrong',t:'Wrong number / not my lead',sub:'Data quality issue',sev:'bad',
+  rx:/(wrong ?number|galat number|kisi aur|nahi chahiye|नहीं चाहिए|maine request nahi|maine kabhi nahi|i never|never requested|stop calling|phone mat karo|kyu call|pareshaan)/i},
+ {k:'distance',t:'Hub too far / location issue',sub:'Showroom distance friction',sev:'warn',
+  rx:/(?:^|[^a-z0-9])(bahut door|bohot door|bahut dur|bohot dur|दूर|दुर|distance jyada|far away|nazdeek nahi|aas paas|नजदीक|location dur|लोकेशन दूर|home test drive|ghar pe|ghar par|घर पर|घर पे|home visit|घर आ|pickup|hub kahan|हब कहां|शोरूम कहां|showroom kahan)/i},
+ {k:'specs',t:'Specs questions unanswered',sub:'Bot gave insufficient detail',sev:'warn',
+  rx:/(?:^|[^a-z0-9])(kitne km|kitni km|kitna run|mileage kya|kitne kilomet|किलोमीटर|किलोमी|कितने कि|कितनी चली|variant kya|kaunsa variant|वेरिएंट|which variant|which model|मॉडल कौन|year kya|कौन सी year|kab ki|kitne saal|कितने साल|owner kitne|first owner|second owner|पहला मालिक|service history|सर्विस हिस्ट्री|insurance valid|rc kab|colour konsa|color kya|colour kya|रंग का|कितने ऑनर)/i},
+ {k:'docs',t:'Docs / warranty / inspection',sub:'Trust / verification concerns',sev:'warn',
+  rx:/(?:^|[^a-z0-9])(inspection|warranty|guarantee|refund|return policy|damage|accident|crash|flood|duplicate rc|rc clear|rc transfer|आरसी|सर्विस बुक|insurance|इंश्योरेंस|वारंटी|गारंटी|paper clear|paperwork|dastavej|दस्तावेज|दास्तावेज|documents|दाक्युमेंट|डाक्युमेंट)/i},
+ {k:'repeat',t:'Asked bot to repeat / no audio',sub:'Network / speech issues',sev:'warn',
+  rx:/(?:^|[^a-z0-9])(kya bola|kya kaha|kya kahan|phir se bol|dobara bol|repeat|sunai nahi|nahi sunai|नहीं सुन|awaaz nahi|aawaz nhi|hello hello|line cut|cut ho gai)/i},
+ {k:'human',t:'Wants human agent',sub:'Bot unable to satisfy',sev:'bad',
+  rx:/(?:^|[^a-z0-9])(insaan se|human se|aadmi se|real person|manager|मैनेजर|supervisor|asli insaan|आदमी से|इंसान|bot nahi|bot mat|बोट नहीं|बोट से|agent se baat|call transfer|kisi admi|executive|एक्जेक्युटिव|एक्ज़ेक|representative)/i},
+ {k:'exchange',t:'Exchange / sell old car',sub:'Cross-sell opportunity',sev:'good',
+  rx:/(?:^|[^a-z0-9])(exchange|एक्सचेंज|एक्सचेंज|purani gaadi|old car|puraani car|पुरानी|पुराने|sell karna|bechni|bechna|बेचने|बेच सकता|apna car|apni gaadi|car sell|trade ?in)/i},
+ {k:'language',t:'Language switch request',sub:'User wants different language',sev:'warn',
+  rx:/(?:^|[^a-z0-9])(english mein|angrezi|hindi mein|marathi|मराठी|tamil|telugu|kannada|bengali|gujarati|language change|bhasha|भाषा)/i},
+];
+// IVR / hold-music boilerplate to strip from user-side text before matching (prevents false positives)
+const AI_NOISE_RX=/(होल्ड पर|कृपया लाइन|stay on the line|put your call on hold|put on hold|hazbund put|hazbund पुट|पुट युअर कॉल|प्लीज़ स्टे ऑन|on the line|busy please try|कोशिश करें|सॉरी कॉल होल्ड|bane rahe|अभी उपलब्ध नहीं|not available.*try again|currently busy)/gi;
+function aiExtractUserText(tx){
+ if(!tx)return '';
+ // split on Assistant:/User: markers; keep only User: chunks
+ const parts=String(tx).split(/\n?(Assistant:|User:)\s*/);
+ const out=[];
+ for(let i=1;i<parts.length-1;i+=2){if(parts[i]==='User:')out.push(parts[i+1]||'')}
+ let s=out.join(' ').replace(AI_NOISE_RX,' ');
+ // collapse repeated single words (e.g. "नहीं नहीं नहीं..." spam)
+ s=s.replace(/(\b\S{1,12}\b)(\s+\1){4,}/g,'$1');
+ return s.replace(/\s+/g,' ').trim();
+}
+function aiFirstQuote(userText,rx,maxLen){
+ if(!userText)return '';
+ // find a sentence containing the match
+ const sents=userText.split(/[.?!।]\s+/);
+ for(const s of sents){if(rx.test(s)){const q=s.trim();return q.length>maxLen?q.slice(0,maxLen-1)+'…':q}}
+ const m=userText.match(rx);if(!m)return '';
+ const idx=userText.indexOf(m[0]);const lo=Math.max(0,idx-40);const hi=Math.min(userText.length,idx+100);
+ let q=userText.slice(lo,hi);if(lo>0)q='…'+q;if(hi<userText.length)q=q+'…';return q;
+}
+function aiRenderPain(buckets){
+ const calls=aiCallsInRange(buckets);
+ const withTx=calls.filter(c=>c.transcript&&c.transcript.length>20);
+ const c=$('#ai-pain');
+ if(!withTx.length){c.innerHTML='<div class="empty-state">No transcripts available in selected range</div>';return}
+ // precompute cleaned user text once per call
+ const userTexts=withTx.map(call=>aiExtractUserText(call.transcript));
+ const results=AI_PAIN_CATS.map(cat=>{
+  let hits=0,sampleQuote='';
+  userTexts.forEach(ut=>{if(cat.rx.test(ut)){hits++;if(!sampleQuote){sampleQuote=aiFirstQuote(ut,cat.rx,180)}}});
+  return {...cat,hits,quote:sampleQuote};
+ }).sort((a,b)=>b.hits-a.hits);
+ const denom=withTx.length;
+ const totalHits=results.reduce((s,r)=>s+r.hits,0);
+ const anyHit=results.filter(r=>r.hits>0).length;
+ let header=`<div class="ai-kpis">
+  <div class="ai-kpi"><div class="k">Transcripts analyzed</div><div class="v">${denom}</div><div class="s">of ${calls.length} calls in range</div></div>
+  <div class="ai-kpi"><div class="k">Signals detected</div><div class="v">${totalHits}</div><div class="s">across ${anyHit} / ${results.length} categories</div></div>
+  <div class="ai-kpi"><div class="k">Top pain</div><div class="v" style="font-size:15px;line-height:1.2">${aiEsc(results[0]?.t||'—')}</div><div class="s">${results[0]?.hits||0} calls (${aiPct(results[0]?.hits||0,denom)}%)</div></div>
+ </div>`;
+ const cards=results.map(r=>{
+  const pct=aiPct(r.hits,denom);
+  const cls=r.hits===0?'':r.sev;
+  return `<div class="ai-pain-card ${cls}">
+   <div class="hd"><div class="t">${aiEsc(r.t)}</div><div class="n">${r.hits}</div></div>
+   <div class="sub">${aiEsc(r.sub)}</div>
+   <div class="pct">${pct}% of transcripts · <span style="opacity:.6">${r.k}</span></div>
+   ${r.quote?`<div class="quote">"${aiEsc(r.quote)}"</div>`:'<div class="quote" style="opacity:.3;font-style:normal">No matches in range</div>'}
+  </div>`;
+ }).join('');
+ c.innerHTML=header+`<div class="ai-pain-grid">${cards}</div>`+
+  `<div class="card-s" style="margin-top:12px">Heuristic pattern match on user utterances only (IVR hold-music stripped). Use these signals to prioritize script updates: bad-severity categories usually kill the call, warn-severity categories cause drop-off or escalation.</div>`;
+}
+
+// Tab switching for advanced panel (scoped to .ai-tabs)
+document.querySelectorAll('.ai-tabs .ai-tab').forEach(t=>{
+ t.onclick=()=>{
+  document.querySelectorAll('.ai-tabs .ai-tab').forEach(x=>x.classList.remove('on'));
+  t.classList.add('on');
+  document.querySelectorAll('.ai-panel').forEach(p=>p.classList.remove('on'));
+  $('#'+t.dataset.ai).classList.add('on');
+ };
+});
+
+function renderAdvanced(buckets){
+ aiRenderObjections(buckets);
+ aiRenderVisits(buckets);
+ aiRenderHubs(buckets);
+ aiRenderHandoff(buckets);
+ aiRenderPain(buckets);
+}
+
 // ---- MASTER RENDER ----
 function render(){
  const buckets=getFiltered();
@@ -1085,6 +1384,7 @@ function render(){
  renderFunnel('f-stage',buildStageFunnel(buckets));
  renderFunnel('f-call',buildCallFunnel(buckets));
  renderFunnel('f-intent',buildIntentFunnel(buckets));
+ renderAdvanced(buckets);
  // charts need next tick for width to be set
  requestAnimationFrame(()=>{
   renderVolume(buckets);
