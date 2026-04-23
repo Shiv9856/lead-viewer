@@ -1,0 +1,156 @@
+async function send_hub_location_on_whatsapp(context) {
+    // Ensure functions_called exists
+    context.functions_called = context.functions_called || [];
+
+    // Extract hub_id and post_call flags from context
+    const hubId = context.call_metadata?.hub_id;
+    const cancellationRequest = context.post_call?.cancellation_request;
+    const callByHumanAgent = context.post_call?.call_by_human_agent;
+
+    // Prepare function log according to required schema
+    const functionLog = {
+        name: "send_hub_location_on_whatsapp",
+        parameters: { hub_id: hubId },
+        success: false,
+        response: null,
+        timestamp: new Date().toISOString()
+    };
+
+    try {
+        // Skip sending only when both flags are explicitly false
+        if (cancellationRequest === false && callByHumanAgent === false) {
+            functionLog.success = true;
+            functionLog.response = "Skipped: cancellation_request and call_by_human_agent are both false";
+            context.functions_called.push(functionLog);
+            return; // do not proceed
+        }
+
+        // Validate hubId
+        if (!hubId || Number(hubId) <= 0) {
+            functionLog.success = false;
+            functionLog.response = "Invalid hub_id";
+            context.functions_called.push(functionLog);
+            return;
+        }
+
+        // Try to fetch hub location. Replace this URL with your real hub service if available.
+        let hubLocation = null;
+        try {
+            const hubServiceUrl = `https://api.example.com/hubs/${encodeURIComponent(hubId)}`;
+            const hubResp = await axios({ method: 'GET', url: hubServiceUrl, timeout: 10000 });
+            if (hubResp && hubResp.data && hubResp.data.google_maps_link) {
+                hubLocation = hubResp.data.google_maps_link;
+            }
+        } catch (err) {
+            // If hub service is not available or fails, proceed to check if metadata already has a link
+            console.error('Error fetching hub info:', err.message);
+        }
+
+        // Fallback to any link present in metadata
+        if (!hubLocation) {
+            if (context.call_metadata?.hub_google_maps_link) {
+                hubLocation = context.call_metadata.hub_google_maps_link;
+            }
+        }
+
+        if (!hubLocation) {
+            functionLog.success = false;
+            functionLog.response = "Could not resolve hub location for given hub_id";
+            context.functions_called.push(functionLog);
+            return;
+        }
+
+        // Determine recipient number: prefer user_phone_number, fall back to dial_info if present
+        const toNumber = context.user_phone_number || (context.call_metadata?.dial_info && context.call_metadata.dial_info.from_number) || context.agent_phone_number;
+        if (!toNumber) {
+            functionLog.success = false;
+            functionLog.response = "No recipient phone number available";
+            context.functions_called.push(functionLog);
+            return;
+        }
+
+        // Prepare WhatsApp payload
+        const heltarUrl = 'https://api.heltar.com/v1/messages/send';
+        const heltar_headers = {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJidXNpbmVzcyI6eyJpZCI6MzUyMTN9LCJpYXQiOjE3NTYyOTk3NzgsImV4cCI6MTkxMzk3OTc3OH0.mACTnK-zPvQKjxrhBY_mu_ecM-clGccMt6qfxaSEgpI',
+        };
+
+        const payload = {
+            messages: [{
+                clientWaNumber: toNumber,
+                templateName: 'demand_voicebot_hub_details_2dec25',
+                templateContent: 'Hi there,\nAs per your request, sharing the hub details below\n\n*Hub Location:* {{1}}\n\nIf you need any help, you can ask here itself.',
+                templateHeader: '',
+                languageCode: 'en',
+                variables: [{
+                    type: 'body',
+                    parameters: [ { type: 'text', text: hubLocation } ]
+                }],
+                messageType: 'template'
+            }]
+        };
+
+        // Retry logic: 1 initial + 3 retries with increasing timeout
+        let resp = null;
+        let lastError = null;
+        for (let attempt = 0; attempt < 4; attempt++) {
+            const timeout = 10000 * (attempt + 1); // ms
+            try {
+                resp = await axios({
+                    method: 'POST',
+                    url: heltarUrl,
+                    headers: headers,
+                    data: payload,
+                    timeout: timeout
+                });
+
+                if (resp && resp.status === 200) {
+                    break; // success
+                } else {
+                    lastError = `Status ${resp ? resp.status : 'no response'}`;
+                    console.error(`Attempt ${attempt + 1} failed with status:`, resp ? resp.status : 'no response');
+                }
+            } catch (err) {
+                lastError = err.message;
+                console.error(`Attempt ${attempt + 1} error:`, err.message);
+            }
+
+            // small delay between retries (1s, 2s, 3s)
+            if (attempt < 3) {
+                const delayMs = (attempt + 1) * 1000;
+                await new Promise(res => setTimeout(res, delayMs));
+            }
+        }
+
+        if (resp && resp.status === 200) {
+            functionLog.success = true;
+            functionLog.response = resp.data || 'WhatsApp API returned no body';
+
+            // Update context to reflect that message was sent
+            context.post_call = context.post_call || {};
+            context.post_call.whatsapp_hub_location_sent = true;
+            context.post_call_detail = context.post_call_detail || {};
+            context.post_call_detail.whatsapp_hub_location_sent = {
+                value: true,
+                comment: `Sent to ${toNumber} at ${new Date().toISOString()}`
+            };
+
+            context.functions_called.push(functionLog);
+            return;
+        } else {
+            functionLog.success = false;
+            functionLog.response = lastError || 'Failed to send whatsapp message after retries';
+            context.functions_called.push(functionLog);
+            return;
+        }
+
+    } catch (error) {
+        functionLog.success = false;
+        functionLog.response = error && error.message ? error.message : String(error);
+        context.functions_called.push(functionLog);
+        return;
+    }
+
+}
